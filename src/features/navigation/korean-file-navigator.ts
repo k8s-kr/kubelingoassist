@@ -52,9 +52,9 @@ export class KoreanFileNavigator {
         const text = document.getText();
         const lines = text.split('\n');
 
-        // 다양한 locale로 시작하는 마크다운 링크 패턴: [텍스트](/locale/path/file.md)
+        // 다양한 locale로 시작하는 마크다운 링크 패턴: [텍스트](/locale/path) 또는 [텍스트](/locale/path/file.md)
         // 지원하는 locale: ko, en, ja, zh, fr, de, es, etc.
-        const linkPattern = /\[([^\]]+)\]\(\/([a-z]{2}(?:-[A-Z]{2})?)\/([^)]+\.md)\)/g;
+        const linkPattern = /\[([^\]]+)\]\(\/([a-z]{2}(?:-[A-Z]{2})?)\/([^)]+)\)/g;
 
         lines.forEach((line, lineIndex) => {
             let match;
