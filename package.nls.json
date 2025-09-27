@@ -1,0 +1,18 @@
+{
+  "commands.openTranslationFile": "Open Translation File",
+  "commands.openReviewFile": "Open Review File",
+  "commands.toggleSyncScroll": "Toggle Sync Scroll",
+  "commands.toggleKubelingo": "Toggle KubeLingoAssist",
+  "commands.changeMode": "Change Mode",
+  "commands.configureAI": "Configure AI",
+  "commands.showAPIKeyStatus": "Show API Key Status",
+  "commands.translateSelected": "Translate Selected Text",
+  "commands.translateToKorean": "Translate to Korean",
+  "commands.translateToLanguage": "Translate to Language",
+  "commands.validateKoreanTerm": "Validate Korean Term",
+  "commands.setKoreanDictionaryAPIKey": "Set Korean Dictionary API Key",
+  "commands.checkAPIStatus": "Check API Status",
+  "commands.analyzeTranslationQuality": "Analyze Translation Quality",
+  "commands.showKoreanFileLinks": "Show All Locale File Links",
+  "commands.showCurrentFileLinks": "Show Current File Locale Links"
+}

@@ -5,8 +5,9 @@ import { globSync } from 'glob';
 
 export async function run(): Promise<void> {
   const mocha = new Mocha({
-    ui: 'tdd',
+    ui: 'bdd',
     color: true,
+    timeout: 10000, // AI 테스트를 위해 타임아웃 증가
   });
 
   const testsRoot = path.resolve(__dirname, '..');

@@ -19,6 +19,9 @@ export class ScrollSyncManager {
         this.cleanupScrollListeners(); // 중복 등록 방지
         this.registerScrollEventListener();
         this.registerEditorsChangedListener();
+
+        // 초기 동기화: 활성 에디터의 현재 위치를 기준으로 다른 에디터들 동기화
+        this.performInitialSync();
     }
 
     /**
@@ -56,6 +59,37 @@ export class ScrollSyncManager {
     }
 
     /**
+     * 초기 동기화를 수행합니다.
+     * 활성 에디터의 현재 스크롤 위치를 기준으로 다른 에디터들을 동기화합니다.
+     */
+    private performInitialSync(): void {
+        const activeEditor = vscode.window.activeTextEditor;
+        const translationEditors = this.getTranslationEditors();
+
+        if (!activeEditor || !this.isTranslationFile(activeEditor.document.fileName)) {
+            return;
+        }
+
+        if (translationEditors.length < 2) {
+            return;
+        }
+
+        // 활성 에디터의 현재 스크롤 위치 가져오기
+        const activeVisibleRange = activeEditor.visibleRanges[0];
+        if (!activeVisibleRange) {
+            return;
+        }
+
+        const currentTopLine = activeVisibleRange.start.line;
+
+        // 다른 에디터들을 같은 라인 번호로 동기화
+        const otherEditors = translationEditors.filter(editor => editor !== activeEditor);
+        otherEditors.forEach(editor => {
+            this.syncSingleEditor(editor, currentTopLine);
+        });
+    }
+
+    /**
      * 스크롤 이벤트 리스너를 등록합니다.
      */
     private registerScrollEventListener(): void {
@@ -82,11 +116,11 @@ export class ScrollSyncManager {
      */
     private handleScrollEvent(event: vscode.TextEditorVisibleRangesChangeEvent): void {
         const editor = event.textEditor;
-        
+
         if (!this.isTranslationFile(editor.document.fileName)) {
             return;
         }
-        
+
         if (this.updatingEditors.has(editor)) {
             return;
         }
@@ -100,21 +134,19 @@ export class ScrollSyncManager {
         this.syncScrollToOtherEditors(editor, currentTopLine);
     }
 
+
     /**
      * 다른 에디터들로 스크롤을 동기화합니다.
      */
     private syncScrollToOtherEditors(sourceEditor: vscode.TextEditor, targetTopLine: number): void {
-        const applyToOthers = () => {
-            const otherEditors = this.getTranslationEditors().filter(editor => 
-                editor !== sourceEditor
-            );
-            
-            otherEditors.forEach(otherEditor => {
-                this.syncSingleEditor(otherEditor, targetTopLine);
-            });
-        };
+        const otherEditors = this.getTranslationEditors().filter(editor =>
+            editor !== sourceEditor
+        );
 
-        this.debounceScrollSync(sourceEditor, applyToOthers);
+        // 즉시 동기화 - 디바운스 제거하여 정확성 향상
+        otherEditors.forEach(otherEditor => {
+            this.syncSingleEditor(otherEditor, targetTopLine);
+        });
     }
 
     /**
@@ -122,36 +154,42 @@ export class ScrollSyncManager {
      */
     private syncSingleEditor(editor: vscode.TextEditor, targetTopLine: number): void {
         this.updatingEditors.add(editor);
-        
+
         try {
-            this.revealAtTop(editor, targetTopLine);
+            // 정확한 라인 동기화: 1라인 차이라도 즉시 동기화
+            const currentTopLine = editor.visibleRanges[0]?.start.line || 0;
+            if (currentTopLine !== targetTopLine) {
+                this.revealAtTop(editor, targetTopLine);
+            }
         } finally {
-            // 우리가 유발한 이벤트는 무시되도록 한 틱 뒤에 해제
-            setTimeout(() => this.updatingEditors.delete(editor), 0);
+            // 즉시 해제하여 다음 스크롤 이벤트를 정확히 처리
+            setTimeout(() => this.updatingEditors.delete(editor), 10);
         }
     }
 
-    /**
-     * 스크롤 동기화에 디바운스를 적용합니다.
-     */
-    private debounceScrollSync(editor: vscode.TextEditor, callback: () => void): void {
-        const existingTimer = this.debounceTimers.get(editor);
-        if (existingTimer) {
-            clearTimeout(existingTimer);
-        }
-
-        const timer = setTimeout(callback, 20); // 20ms 디바운스
-        this.debounceTimers.set(editor, timer);
-    }
 
     /**
      * 에디터 변경을 처리합니다.
      */
     private handleEditorsChanged(): void {
         const translationEditors = this.getTranslationEditors();
-        
+
         if (translationEditors.length < 2) {
             notificationManager.showWarning('notifications.warning.insufficientTranslationFiles');
+            return;
+        }
+
+        // 새로 열린 에디터가 있다면 기존 에디터의 스크롤 위치와 동기화
+        if (translationEditors.length >= 2) {
+            const activeEditor = vscode.window.activeTextEditor;
+            const referenceEditor = translationEditors.find(editor =>
+                editor !== activeEditor && editor.visibleRanges.length > 0
+            );
+
+            if (referenceEditor && activeEditor && this.isTranslationFile(activeEditor.document.fileName)) {
+                const referenceTopLine = referenceEditor.visibleRanges[0]?.start.line || 0;
+                this.syncSingleEditor(activeEditor, referenceTopLine);
+            }
         }
     }
 

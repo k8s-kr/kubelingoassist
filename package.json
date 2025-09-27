@@ -69,6 +69,46 @@
       {
         "command": "kubelingoassist.translateSelected",
         "title": "%commands.translateSelected%"
+      },
+      {
+        "command": "k8sTranslationHelper.translateToKorean",
+        "title": "%commands.translateToKorean%",
+        "category": "KubeLingoAssist AI"
+      },
+      {
+        "command": "k8sTranslationHelper.translateToLanguage",
+        "title": "%commands.translateToLanguage%",
+        "category": "KubeLingoAssist AI"
+      },
+      {
+        "command": "k8sTranslationHelper.validateKoreanTerm",
+        "title": "%commands.validateKoreanTerm%",
+        "category": "KubeLingoAssist AI"
+      },
+      {
+        "command": "k8sTranslationHelper.setKoreanDictionaryAPIKey",
+        "title": "%commands.setKoreanDictionaryAPIKey%",
+        "category": "KubeLingoAssist AI"
+      },
+      {
+        "command": "k8sTranslationHelper.checkAPIStatus",
+        "title": "%commands.checkAPIStatus%",
+        "category": "KubeLingoAssist AI"
+      },
+      {
+        "command": "k8sTranslationHelper.analyzeTranslationQuality",
+        "title": "%commands.analyzeTranslationQuality%",
+        "category": "KubeLingoAssist AI"
+      },
+      {
+        "command": "kubelingoassist.showKoreanFileLinks",
+        "title": "%commands.showKoreanFileLinks%",
+        "category": "KubeLingoAssist"
+      },
+      {
+        "command": "kubelingoassist.showCurrentFileLinks",
+        "title": "%commands.showCurrentFileLinks%",
+        "category": "KubeLingoAssist"
       }
     ],
     "configuration": {
@@ -124,6 +164,18 @@
         "key": "alt+shift+r",
         "mac": "cmd+shift+r",
         "when": "editorTextFocus "
+      },
+      {
+        "command": "k8sTranslationHelper.translateToKorean",
+        "key": "ctrl+alt+k",
+        "mac": "cmd+alt+k",
+        "when": "editorTextFocus && editorHasSelection"
+      },
+      {
+        "command": "k8sTranslationHelper.validateKoreanTerm",
+        "key": "ctrl+alt+v",
+        "mac": "cmd+alt+v",
+        "when": "editorTextFocus"
       }
     ],
     "menus": {
@@ -131,6 +183,60 @@
         {
           "command": "kubelingoassist.openTranslationFile",
           "when": "resourceExtname == .md"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "k8sTranslationHelper.translateToKorean",
+          "when": "editorHasSelection",
+          "group": "kubelingoassist@1"
+        },
+        {
+          "command": "k8sTranslationHelper.translateToLanguage",
+          "when": "editorHasSelection",
+          "group": "kubelingoassist@2"
+        },
+        {
+          "command": "k8sTranslationHelper.validateKoreanTerm",
+          "group": "kubelingoassist@3"
+        },
+        {
+          "command": "k8sTranslationHelper.analyzeTranslationQuality",
+          "when": "editorHasSelection",
+          "group": "kubelingoassist@4"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "k8sTranslationHelper.translateToKorean",
+          "when": "editorIsOpen"
+        },
+        {
+          "command": "k8sTranslationHelper.translateToLanguage",
+          "when": "editorIsOpen"
+        },
+        {
+          "command": "k8sTranslationHelper.validateKoreanTerm",
+          "when": "editorIsOpen"
+        },
+        {
+          "command": "k8sTranslationHelper.setKoreanDictionaryAPIKey",
+          "when": "false"
+        },
+        {
+          "command": "k8sTranslationHelper.checkAPIStatus",
+          "when": "false"
+        },
+        {
+          "command": "k8sTranslationHelper.analyzeTranslationQuality",
+          "when": "editorIsOpen"
+        },
+        {
+          "command": "kubelingoassist.showKoreanFileLinks"
+        },
+        {
+          "command": "kubelingoassist.showCurrentFileLinks",
+          "when": "editorIsOpen"
         }
       ]
     }
@@ -147,7 +253,6 @@
   "devDependencies": {
     "@types/mocha": "^10.0.10",
     "@types/node": "^16.18.126",
-    "@types/node-fetch": "^2.6.13",
     "@types/vscode": "^1.75.0",
     "@vscode/test-electron": "^2.5.2",
     "mocha": "^11.7.1",

@@ -1,0 +1,22 @@
+{
+  "commands.openTranslationFile": "번역 파일 열기",
+  "commands.openReviewFile": "리뷰 파일 열기",
+  "commands.toggleSyncScroll": "동기화 스크롤 토글",
+  "commands.toggleKubelingo": "KubeLingoAssist 토글",
+  "commands.changeMode": "모드 변경",
+  "commands.configureAI": "AI 설정",
+  "commands.showAPIKeyStatus": "API 키 상태 표시",
+  "commands.translateSelected": "선택된 텍스트 번역",
+  "commands.translateToKorean": "한국어로 번역",
+  "commands.translateToLanguage": "다른 언어로 번역",
+  "commands.validateKoreanTerm": "한국어 용어 검증",
+  "commands.setKoreanDictionaryAPIKey": "한국어 사전 API 키 설정",
+  "commands.checkAPIStatus": "API 키 상태 확인",
+  "commands.analyzeTranslationQuality": "번역 품질 분석",
+  "commands.showKoreanFileLinks": "모든 locale 파일 링크 보기",
+  "commands.showCurrentFileLinks": "현재 파일의 locale 링크 보기",
+  "notifications.info.apiKeyUpdated": "API 키가 업데이트되었습니다",
+  "notifications.info.apiKeyDeleted": "API 키가 삭제되었습니다",
+  "notifications.error.apiKeySaveFailed": "API 키 저장에 실패했습니다",
+  "notifications.error.apiKeyDeleteFailed": "API 키 삭제에 실패했습니다"
+}

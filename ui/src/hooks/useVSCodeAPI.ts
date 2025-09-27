@@ -7,17 +7,40 @@ declare global {
   var acquireVsCodeApi: undefined | (() => VSCodeAPI);
   interface Window {
     initialState?: any; // 확장에서 주입하는 초기 상태
+    vscodeApi?: VSCodeAPI; // 싱글톤 저장
   }
 }
+
+// 글로벌 싱글톤 VSCode API 인스턴스
+let globalVscodeApi: VSCodeAPI | null = null;
+
+const getVSCodeAPI = (): VSCodeAPI | null => {
+  if (globalVscodeApi) {
+    return globalVscodeApi;
+  }
+
+  if (typeof window !== 'undefined' && window.vscodeApi) {
+    globalVscodeApi = window.vscodeApi;
+    return globalVscodeApi;
+  }
+
+  if (typeof acquireVsCodeApi !== 'undefined') {
+    globalVscodeApi = acquireVsCodeApi();
+    if (typeof window !== 'undefined') {
+      window.vscodeApi = globalVscodeApi;
+    }
+    return globalVscodeApi;
+  }
+
+  return null;
+};
 
 export const useTranslationVSCodeAPI = () => {
   const vscodeApiRef = useRef<VSCodeAPI | null>(null);
 
   // mount 시 한 번만 VS Code API 확보
   useEffect(() => {
-    if (typeof acquireVsCodeApi !== 'undefined') {
-      vscodeApiRef.current = acquireVsCodeApi();
-    }
+    vscodeApiRef.current = getVSCodeAPI();
   }, []);
 
   const sendMessageToExtension = useCallback((message: VSCodeOutboundMessage) => {

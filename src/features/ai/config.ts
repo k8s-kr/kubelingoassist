@@ -31,12 +31,25 @@ export class ConfigManager {
   }
 
   async getAPIKey(provider: string): Promise<string | undefined> {
+    console.log(`ConfigManager.getAPIKey: Getting API key for provider: ${provider}`);
+
     const secretKey = this.getSecretKey(provider);
     if (!secretKey) {
-      throw new Error(`Unsupported AI provider: ${provider}`);
+      const error = `Unsupported AI provider: ${provider}`;
+      console.error(`ConfigManager.getAPIKey: ${error}`);
+      throw new Error(error);
     }
 
-    return await this.context.secrets.get(secretKey);
+    console.log(`ConfigManager.getAPIKey: Using secret key: ${secretKey}`);
+
+    try {
+      const result = await this.context.secrets.get(secretKey);
+      console.log(`ConfigManager.getAPIKey: Retrieved key for ${provider}: ${result ? 'found' : 'not found'}`);
+      return result;
+    } catch (error) {
+      console.error(`ConfigManager.getAPIKey: Error retrieving key for ${provider}:`, error);
+      throw error;
+    }
   }
 
   async setAPIKey(provider: string, apiKey: string): Promise<void> {
@@ -72,9 +85,13 @@ export class ConfigManager {
 
   async hasAPIKey(provider: string): Promise<boolean> {
     try {
+      console.log(`ConfigManager.hasAPIKey: Checking API key for provider: ${provider}`);
       const apiKey = await this.getAPIKey(provider);
-      return !!apiKey;
-    } catch {
+      const hasKey = !!apiKey;
+      console.log(`ConfigManager.hasAPIKey: Provider ${provider} has key: ${hasKey}`);
+      return hasKey;
+    } catch (error) {
+      console.error(`ConfigManager.hasAPIKey: Error checking API key for ${provider}:`, error);
       return false;
     }
   }

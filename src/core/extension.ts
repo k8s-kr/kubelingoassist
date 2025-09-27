@@ -5,6 +5,8 @@ import { TranslationCommandManager } from '../features/translation/TranslationCo
 import { ScrollSyncManager } from '../features/translation/ScrollSyncManager';
 import { LinkValidator } from '../validators/link';
 import { AICommands } from '../features/ai/ai-commands';
+import { AITranslationCommands } from '../features/ai/commands';
+import { KoreanFileNavigator } from '../features/navigation/korean-file-navigator';
 
 let statusBarManager: StatusBarManager;
 let linkValidator: LinkValidator;
@@ -15,21 +17,22 @@ let scrollSyncManager: ScrollSyncManager;
 export function activate(context: vscode.ExtensionContext) {
     // Status bar manager 초기화
     statusBarManager = new StatusBarManager();
-    
+
     // Link validator 초기화
     linkValidator = new LinkValidator();
-    
+
     // AI Commands 초기화
     aiCommands = new AICommands(context);
-    
+
+
     // Translation Command Manager 초기화
     translationCommandManager = new TranslationCommandManager();
-    
+
     // Scroll Sync Manager 초기화
     scrollSyncManager = new ScrollSyncManager();
     
     // Activity Bar 뷰 프로바이더 등록
-    const provider = new TranslationViewProvider(context.extensionUri);
+    const provider = new TranslationViewProvider(context.extensionUri, context);
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider('kubelingoassist-view', provider)
     );
@@ -42,6 +45,19 @@ export function activate(context: vscode.ExtensionContext) {
     
     // AI Commands 등록
     aiCommands.registerCommands();
+
+    // Korean File Navigator 명령어 등록
+    const showLocaleFileLinksCommand = vscode.commands.registerCommand(
+        'kubelingoassist.showKoreanFileLinks',
+        () => KoreanFileNavigator.showLocaleFileQuickPick(false)
+    );
+
+    const showCurrentFileLinksCommand = vscode.commands.registerCommand(
+        'kubelingoassist.showCurrentFileLinks',
+        () => KoreanFileNavigator.showLocaleFileQuickPick(true)
+    );
+
+    context.subscriptions.push(showLocaleFileLinksCommand, showCurrentFileLinksCommand);
     
     // 저장된 상태로 초기화 (상태바, 웹뷰 동기화)
     translationCommandManager.initStateFromStorage(context);
