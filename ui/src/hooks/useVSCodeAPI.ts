@@ -54,10 +54,6 @@ export const useTranslationVSCodeAPI = () => {
     sendMessageToExtension({ type: 'toggleSyncScroll' });
   }, [sendMessageToExtension]);
 
-  const sendAIMessage = useCallback((message: string) => {
-    sendMessageToExtension({ type: 'aiChat', payload: { message } });
-  }, [sendMessageToExtension]);
-
   const toggleKubelingo = useCallback(() => {
     sendMessageToExtension({ type: 'toggleKubelingo' });
   }, [sendMessageToExtension]);
@@ -71,7 +67,6 @@ export const useTranslationVSCodeAPI = () => {
     openTranslationFile,
     openReviewFile,
     toggleSyncScroll,
-    sendAIMessage,
     toggleKubelingo,
     changeMode,
 

@@ -17,9 +17,6 @@ export const ja: TranslationResource = {
     toggleSyncScroll: '同期スクロール切り替え',
     toggleKubelingo: 'KubelingoAssist切り替え',
     changeMode: 'モード変更',
-    configureAI: 'AI設定の構成',
-    showAPIKeyStatus: 'APIキーステータス表示',
-    translateSelected: '選択したテキストを翻訳',
   },
 
   messages: {

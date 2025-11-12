@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslationVSCodeAPI } from '../../hooks/useVSCodeAPI';
 import { TranslationControlSection } from './TranslationControlSection';
-import { AIChatSection } from './AIChatSection';
 import { KubelingoMode, KUBELINGO_MODES } from '../../types/modes';
 
 interface TranslationAppState {
@@ -15,7 +14,6 @@ export const TranslationView: React.FC = () => {
     openTranslationFile: handleOpenTranslation,
     openReviewFile: handleOpenReviewFile,
     toggleSyncScroll: handleToggleSyncScroll,
-    sendAIMessage: handleSendAIMessage,
     toggleKubelingo: handleToggleKubelingo,
     changeMode: handleChangeMode,
     initialState,
@@ -83,10 +81,6 @@ export const TranslationView: React.FC = () => {
     handleToggleSyncScroll();
   };
 
-  const onSendAIMessage = (message: string) => {
-    handleSendAIMessage(message);
-  };
-
   const onToggleKubelingo = () => {
     console.log('onToggleKubelingo called');
     // Send command to extension to toggle kubelingo
@@ -112,10 +106,6 @@ export const TranslationView: React.FC = () => {
         onToggleKubelingo={onToggleKubelingo}
         onModeChange={onModeChange}
       />
-      {translationAppState.isKubelingoEnabled &&
-      <AIChatSection onSendMessage={onSendAIMessage} />
-      }
-      
     </div>
   );
 };

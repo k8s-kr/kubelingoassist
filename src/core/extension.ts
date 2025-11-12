@@ -4,11 +4,9 @@ import { StatusBarManager } from '../features/ui/StatusBarManager';
 import { TranslationCommandManager } from '../features/translation/TranslationCommandManager';
 import { ScrollSyncManager } from '../features/translation/ScrollSyncManager';
 import { LinkValidator } from '../validators/link';
-import { AICommands } from '../features/ai/ai-commands';
 
 let statusBarManager: StatusBarManager;
 let linkValidator: LinkValidator;
-let aiCommands: AICommands;
 let translationCommandManager: TranslationCommandManager;
 let scrollSyncManager: ScrollSyncManager;
 
@@ -18,30 +16,24 @@ export function activate(context: vscode.ExtensionContext) {
     
     // Link validator 초기화
     linkValidator = new LinkValidator();
-    
-    // AI Commands 초기화
-    aiCommands = new AICommands(context);
-    
+
     // Translation Command Manager 초기화
     translationCommandManager = new TranslationCommandManager();
-    
+
     // Scroll Sync Manager 초기화
     scrollSyncManager = new ScrollSyncManager();
-    
+
     // Activity Bar 뷰 프로바이더 등록
     const provider = new TranslationViewProvider(context.extensionUri);
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider('kubelingoassist-view', provider)
     );
-    
+
     // Commands 모듈에 의존성 설정
     translationCommandManager.setDependencies(statusBarManager, provider);
-    
+
     // Commands 등록
     translationCommandManager.registerCommands(context);
-    
-    // AI Commands 등록
-    aiCommands.registerCommands();
     
     // 저장된 상태로 초기화 (상태바, 웹뷰 동기화)
     translationCommandManager.initStateFromStorage(context);

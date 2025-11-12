@@ -57,55 +57,8 @@
       {
         "command": "kubelingoassist.changeMode",
         "title": "%commands.changeMode%"
-      },
-      {
-        "command": "kubelingoassist.configureAI",
-        "title": "%commands.configureAI%"
-      },
-      {
-        "command": "kubelingoassist.showAPIKeyStatus",
-        "title": "%commands.showAPIKeyStatus%"
-      },
-      {
-        "command": "kubelingoassist.translateSelected",
-        "title": "%commands.translateSelected%"
       }
     ],
-    "configuration": {
-      "title": "KubeLingoAssist",
-      "properties": {
-        "kubelingoassist.ai.provider": {
-          "type": "string",
-          "enum": [
-            "openai",
-            "claude",
-            "gemini"
-          ],
-          "default": "openai",
-          "description": "AI provider for translation"
-        },
-        "kubelingoassist.ai.model": {
-          "type": "string",
-          "description": "AI model to use for translation (e.g., gpt-4, claude-3-sonnet-20240229, gemini-pro)"
-        },
-        "kubelingoassist.ai.baseUrl": {
-          "type": "string",
-          "description": "Custom base URL for AI API (optional)"
-        },
-        "kubelingoassist.ai.maxTokens": {
-          "type": "number",
-          "default": 2000,
-          "description": "Maximum tokens for AI response"
-        },
-        "kubelingoassist.ai.temperature": {
-          "type": "number",
-          "default": 0.7,
-          "minimum": 0,
-          "maximum": 2,
-          "description": "Temperature for AI response (0-2)"
-        }
-      }
-    },
     "keybindings": [
       {
         "command": "kubelingoassist.openTranslationFile",

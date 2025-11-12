@@ -17,9 +17,6 @@ export const ko: TranslationResource = {
     toggleSyncScroll: '스크롤 동기화 토글',
     toggleKubelingo: 'KubelingoAssist 토글',
     changeMode: '모드 변경',
-    configureAI: 'AI 설정 구성',
-    showAPIKeyStatus: 'API 키 상태 확인',
-    translateSelected: '선택한 텍스트 번역',
   },
 
   messages: {
