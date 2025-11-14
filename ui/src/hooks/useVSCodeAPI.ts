@@ -66,10 +66,6 @@ export const useTranslationVSCodeAPI = () => {
     sendMessageToExtension({ type: 'fetchPRInfo', prNumber });
   }, [sendMessageToExtension]);
 
-  const pushCommentsToGitHub = useCallback((reviewEvent?: string) => {
-    sendMessageToExtension({ type: 'pushCommentsToGitHub', reviewEvent });
-  }, [sendMessageToExtension]);
-
   return {
     // Extension command wrappers
     openTranslationFile,
@@ -78,7 +74,6 @@ export const useTranslationVSCodeAPI = () => {
     toggleKubelingo,
     changeMode,
     fetchPRInfo,
-    pushCommentsToGitHub,
 
     // Raw VSCode API reference (if needed)
     vscodeApi: vscodeApiRef.current,

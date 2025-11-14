@@ -3,8 +3,6 @@ import { ControlButton, StatusBar } from '../ui';
 import { KubelingoMode, KUBELINGO_MODES } from '../../types/modes';
 import { uiI18n } from '../../i18n';
 
-type ReviewEvent = 'APPROVE' | 'COMMENT' | 'REQUEST_CHANGES';
-
 interface TranslationControlSectionProps {
   isSyncScrollEnabled: boolean;
   currentMode: KubelingoMode;
@@ -13,7 +11,6 @@ interface TranslationControlSectionProps {
   onToggleSyncScroll: () => void;
   onModeChange: (mode: KubelingoMode) => void;
   onFetchPRInfo?: (prNumber: number) => void;
-  onPushCommentsToGitHub?: (reviewEvent?: ReviewEvent) => void;
 }
 
 export const TranslationControlSection: React.FC<TranslationControlSectionProps> = ({
@@ -23,22 +20,14 @@ export const TranslationControlSection: React.FC<TranslationControlSectionProps>
   onOpenReviewFile,
   onToggleSyncScroll,
   onModeChange,
-  onFetchPRInfo,
-  onPushCommentsToGitHub
+  onFetchPRInfo
 }) => {
   const [prNumber, setPrNumber] = React.useState<string>('');
-  const [reviewType, setReviewType] = React.useState<ReviewEvent>('COMMENT');
 
   const handleFetchPR = () => {
     const num = parseInt(prNumber);
     if (!isNaN(num) && num > 0 && onFetchPRInfo) {
       onFetchPRInfo(num);
-    }
-  };
-
-  const handleSubmitReview = () => {
-    if (onPushCommentsToGitHub) {
-      onPushCommentsToGitHub(reviewType);
     }
   };
   return (
@@ -98,33 +87,6 @@ export const TranslationControlSection: React.FC<TranslationControlSectionProps>
               aria-label="Fetch PR by number"
             >
               PR 가져오기
-            </ControlButton>
-          </div>
-          <div className="button-group" style={{ marginTop: '8px', display: 'flex', gap: '8px', alignItems: 'center' }}>
-            <select
-              value={reviewType}
-              onChange={(e) => setReviewType(e.target.value as ReviewEvent)}
-              style={{
-                padding: '6px 10px',
-                borderRadius: '4px',
-                border: '1px solid var(--vscode-input-border)',
-                backgroundColor: 'var(--vscode-input-background)',
-                color: 'var(--vscode-input-foreground)',
-                fontSize: '13px',
-                flex: 1
-              }}
-              aria-label="Select review type"
-            >
-              <option value="COMMENT">💬 Comment</option>
-              <option value="APPROVE">✅ Approve</option>
-              <option value="REQUEST_CHANGES">🔄 Request Changes</option>
-            </select>
-            <ControlButton
-              variant="primary"
-              onClick={handleSubmitReview}
-              aria-label="Submit review to GitHub"
-            >
-              Submit Review
             </ControlButton>
           </div>
         </div>

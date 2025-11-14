@@ -216,13 +216,14 @@ export class TranslationViewProvider implements vscode.WebviewViewProvider {
   }
 
   private _generateCSP(cspSource: string, nonce: string): string {
-    return `
-      default-src 'none';
-      img-src ${cspSource} blob: data:;
-      style-src ${cspSource} 'unsafe-inline';
-      script-src 'nonce-${nonce}' ${cspSource};
-      font-src ${cspSource} data:;
-    `;
+    return [
+      `default-src 'none'`,
+      `img-src ${cspSource} blob: data:`,
+      `style-src ${cspSource} 'unsafe-inline'`,
+      `script-src 'nonce-${nonce}' ${cspSource}`,
+      `font-src ${cspSource} data:`,
+      `connect-src ${cspSource}`
+    ].join('; ');
   }
 
   private _generateHtmlTemplate({

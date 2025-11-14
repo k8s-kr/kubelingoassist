@@ -50,6 +50,29 @@ export interface ReviewCommentSuggestion {
   suggested: string;
 }
 
+export interface GitHubUserInfo {
+  login: string;
+  id: number;
+  nodeId: string;
+  avatarUrl: string;
+  htmlUrl: string;
+  type: string;
+  siteAdmin: boolean;
+}
+
+export interface CommentReactions {
+  plusOne: number;
+  minusOne: number;
+  laugh: number;
+  confused: number;
+  heart: number;
+  hooray: number;
+  rocket: number;
+  eyes: number;
+  totalCount: number;
+  url: string;
+}
+
 export interface ReviewComment {
   id: string;
   filePath: string;
@@ -59,15 +82,74 @@ export interface ReviewComment {
   lineNumber: number;
   createdAt: Date;
   resolved: boolean;
+  outdated: boolean; // 댓글이 작성된 코드가 변경되어 더 이상 최신 상태가 아님
   suggestion?: ReviewCommentSuggestion;
   replies: ReviewComment[];
   prCommentId?: number;
+
+  // Pending 상태 (로컬에서 작성했지만 아직 GitHub에 제출되지 않음)
+  isPending: boolean;
+  isLocalOnly: boolean; // GitHub에서 가져온 게 아닌 로컬 작성 댓글
+
+  // GitHub 상세 정보 (선택적)
+  nodeId?: string;
+  updatedAt?: Date;
+  diffHunk?: string;
+
+  // 라인 범위 정보 (멀티라인 댓글)
+  startLine?: number | null;
+  startSide?: 'LEFT' | 'RIGHT' | null;
+  originalLine?: number;
+  originalStartLine?: number | null;
+  side?: 'LEFT' | 'RIGHT';
+
+  // 커밋 정보
+  commitId?: string;
+  originalCommitId?: string;
+
+  // 위치 정보
+  position?: number | null;
+  originalPosition?: number;
+
+  // 리뷰 정보
+  pullRequestReviewId?: number;
+  subjectType?: string;
+
+  // GitHub 링크
+  htmlUrl?: string;
+  url?: string;
+  pullRequestUrl?: string;
+
+  // 작성자 상세 정보
+  userInfo?: GitHubUserInfo;
+  authorAssociation?: string;
+
+  // 리액션
+  reactions?: CommentReactions;
+
+  // 사용자의 리액션 상태 (로컬 전용, on/off 토글 추적)
+  userReactions?: Set<string>;
 }
 
 export interface CommentStorage {
   version: string;
   comments: {
     [filePath: string]: ReviewComment[];
+  };
+}
+
+// Pending Review 관리
+export interface PendingReview {
+  prNumber: number;
+  comments: ReviewComment[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface PendingReviewStorage {
+  version: string;
+  reviews: {
+    [prNumber: string]: PendingReview;
   };
 }
 

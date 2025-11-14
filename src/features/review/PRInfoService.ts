@@ -57,18 +57,77 @@ export interface PRDetails extends PRInfo {
 }
 
 /**
+ * GitHub 사용자 정보
+ */
+export interface GitHubUser {
+    login: string;
+    id: number;
+    nodeId: string;
+    avatarUrl: string;
+    htmlUrl: string;
+    type: string;
+    siteAdmin: boolean;
+}
+
+/**
+ * 리액션 정보
+ */
+export interface Reactions {
+    plusOne: number;
+    minusOne: number;
+    laugh: number;
+    confused: number;
+    heart: number;
+    hooray: number;
+    rocket: number;
+    eyes: number;
+    totalCount: number;
+    url: string;
+}
+
+/**
  * PR 리뷰 댓글
  */
 export interface PRReviewComment {
     id: number;
+    nodeId: string;
     path: string;
-    line: number;
+    line: number | null;
     body: string;
-    user: string;
+    user: GitHubUser;
     createdAt: string;
+    updatedAt: string;
     diffHunk: string;
+
+    // 라인 범위 정보 (멀티라인 댓글)
+    startLine: number | null;
+    startSide: 'LEFT' | 'RIGHT' | null;
     originalLine?: number;
+    originalStartLine: number | null;
     side: 'LEFT' | 'RIGHT';
+
+    // 커밋 정보
+    commitId: string;
+    originalCommitId: string;
+
+    // 위치 정보
+    position: number | null;
+    originalPosition: number;
+
+    // 리뷰 정보
+    pullRequestReviewId: number;
+    subjectType: string;
+
+    // GitHub 링크
+    htmlUrl: string;
+    url: string;
+    pullRequestUrl: string;
+
+    // 작성자 권한
+    authorAssociation: string;
+
+    // 리액션
+    reactions: Reactions;
 }
 
 /**
@@ -302,13 +361,43 @@ export class PRInfoService {
 
     /**
      * 현재 브랜치의 PR 번호 가져오기
+     * fork 저장소의 경우 parent 저장소에서도 PR을 검색합니다
      */
     async getCurrentPRNumber(): Promise<number | null> {
         try {
             const cwd = this.getWorkspaceRoot();
-            const { stdout } = await exec('gh pr view --json number -q .number', { cwd });
-            const prNumber = parseInt(stdout.trim());
-            return isNaN(prNumber) ? null : prNumber;
+
+            // 먼저 현재 저장소에서 PR 검색
+            try {
+                const { stdout } = await exec('gh pr view --json number -q .number', { cwd });
+                const prNumber = parseInt(stdout.trim());
+                if (!isNaN(prNumber)) {
+                    console.log(`Found PR #${prNumber} in current repository`);
+                    return prNumber;
+                }
+            } catch (error) {
+                console.log('No PR found in current repository, checking parent...');
+            }
+
+            // fork인 경우 parent 저장소에서 검색
+            const parentRepo = await this.getParentRepo();
+            if (parentRepo) {
+                try {
+                    const { stdout } = await exec(
+                        `gh pr view --repo ${parentRepo} --json number -q .number`,
+                        { cwd }
+                    );
+                    const prNumber = parseInt(stdout.trim());
+                    if (!isNaN(prNumber)) {
+                        console.log(`Found PR #${prNumber} in parent repository: ${parentRepo}`);
+                        return prNumber;
+                    }
+                } catch (error) {
+                    console.error('No PR found in parent repository:', error);
+                }
+            }
+
+            return null;
         } catch (error) {
             console.error('Failed to get current PR number:', error);
             return null;
@@ -361,14 +450,63 @@ export class PRInfoService {
 
             return comments.map((comment: any) => ({
                 id: comment.id,
+                nodeId: comment.node_id,
                 path: comment.path,
-                line: comment.line || comment.original_line || 1,
+                line: comment.line,
                 body: comment.body,
-                user: comment.user?.login || 'unknown',
+                user: {
+                    login: comment.user?.login || 'unknown',
+                    id: comment.user?.id || 0,
+                    nodeId: comment.user?.node_id || '',
+                    avatarUrl: comment.user?.avatar_url || '',
+                    htmlUrl: comment.user?.html_url || '',
+                    type: comment.user?.type || 'User',
+                    siteAdmin: comment.user?.site_admin || false
+                },
                 createdAt: comment.created_at,
+                updatedAt: comment.updated_at,
                 diffHunk: comment.diff_hunk || '',
+
+                // 라인 범위 정보
+                startLine: comment.start_line,
+                startSide: comment.start_side,
                 originalLine: comment.original_line,
-                side: comment.side === 'LEFT' ? 'LEFT' : 'RIGHT'
+                originalStartLine: comment.original_start_line,
+                side: comment.side === 'LEFT' ? 'LEFT' : 'RIGHT',
+
+                // 커밋 정보
+                commitId: comment.commit_id,
+                originalCommitId: comment.original_commit_id,
+
+                // 위치 정보
+                position: comment.position,
+                originalPosition: comment.original_position,
+
+                // 리뷰 정보
+                pullRequestReviewId: comment.pull_request_review_id,
+                subjectType: comment.subject_type || 'line',
+
+                // GitHub 링크
+                htmlUrl: comment.html_url,
+                url: comment.url,
+                pullRequestUrl: comment.pull_request_url,
+
+                // 작성자 권한
+                authorAssociation: comment.author_association,
+
+                // 리액션
+                reactions: {
+                    plusOne: comment.reactions?.['+1'] || 0,
+                    minusOne: comment.reactions?.['-1'] || 0,
+                    laugh: comment.reactions?.laugh || 0,
+                    confused: comment.reactions?.confused || 0,
+                    heart: comment.reactions?.heart || 0,
+                    hooray: comment.reactions?.hooray || 0,
+                    rocket: comment.reactions?.rocket || 0,
+                    eyes: comment.reactions?.eyes || 0,
+                    totalCount: comment.reactions?.total_count || 0,
+                    url: comment.reactions?.url || ''
+                }
             }));
         } catch (error) {
             console.error(`Failed to fetch comments for PR #${prNumber}:`, error);

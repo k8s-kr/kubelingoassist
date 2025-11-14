@@ -15,7 +15,6 @@ export const TranslationView: React.FC = () => {
     toggleSyncScroll: handleToggleSyncScroll,
     changeMode: handleChangeMode,
     fetchPRInfo: handleFetchPRInfo,
-    pushCommentsToGitHub: handlePushCommentsToGitHub,
     initialState,
     vscodeGetState,
     vscodeSetState,
@@ -86,7 +85,6 @@ export const TranslationView: React.FC = () => {
         onToggleSyncScroll={handleToggleSyncScroll}
         onModeChange={onModeChange}
         onFetchPRInfo={handleFetchPRInfo}
-        onPushCommentsToGitHub={handlePushCommentsToGitHub}
       />
     </div>
   );

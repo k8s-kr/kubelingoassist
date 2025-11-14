@@ -64,62 +64,9 @@
         "when": "false"
       },
       {
-        "command": "kubelingoassist.addReviewComment",
-        "title": "Add Review Comment",
-        "when": "false"
-      },
-      {
-        "command": "kubelingoassist.suggestChange",
-        "title": "Suggest Change",
-        "when": "false"
-      },
-      {
-        "command": "kubelingoassist.addTerminologyComment",
-        "title": "Add Terminology Comment",
-        "when": "false"
-      },
-      {
-        "command": "kubelingoassist.addGrammarComment",
-        "title": "Add Grammar Comment",
-        "when": "false"
-      },
-      {
-        "command": "kubelingoassist.addStyleComment",
-        "title": "Add Style Comment",
-        "when": "false"
-      },
-      {
-        "command": "kubelingoassist.addQuestionComment",
-        "title": "Ask Question",
-        "when": "false"
-      },
-      {
-        "command": "kubelingoassist.syncCommentsFromGitHub",
-        "title": "Sync Comments from GitHub PR"
-      },
-      {
-        "command": "kubelingoassist.pushCommentsToGitHub",
-        "title": "Push Comments to GitHub PR"
-      },
-      {
         "command": "kubelingoassist.fetchPRInfo",
         "title": "Fetch PR Info",
-        "when": "false"
-      },
-      {
-        "command": "kubelingoassist.openPRFile",
-        "title": "Open PR File",
-        "when": "false"
-      },
-      {
-        "command": "kubelingoassist.applySuggestion",
-        "title": "Apply Suggestion",
-        "when": "false"
-      },
-      {
-        "command": "kubelingoassist.rejectSuggestion",
-        "title": "Reject Suggestion",
-        "when": "false"
+        "category": "PR"
       }
     ],
     "keybindings": [
@@ -142,59 +89,11 @@
         "when": "editorTextFocus "
       }
     ],
-    "submenus": [
-      {
-        "id": "kubelingoassist.review",
-        "label": "Translation Review"
-      }
-    ],
     "menus": {
       "explorer/context": [
         {
           "command": "kubelingoassist.openTranslationFile",
           "when": "resourceExtname == .md"
-        }
-      ],
-      "editor/context": [
-        {
-          "submenu": "kubelingoassist.review",
-          "group": "kubelingoassist",
-          "when": "editorLangId == markdown"
-        }
-      ],
-      "kubelingoassist.review": [
-        {
-          "command": "kubelingoassist.addReviewComment",
-          "group": "1_comment"
-        },
-        {
-          "command": "kubelingoassist.suggestChange",
-          "group": "1_comment",
-          "when": "editorHasSelection"
-        },
-        {
-          "command": "kubelingoassist.addTerminologyComment",
-          "group": "2_specific"
-        },
-        {
-          "command": "kubelingoassist.addGrammarComment",
-          "group": "2_specific"
-        },
-        {
-          "command": "kubelingoassist.addStyleComment",
-          "group": "2_specific"
-        },
-        {
-          "command": "kubelingoassist.addQuestionComment",
-          "group": "2_specific"
-        },
-        {
-          "command": "kubelingoassist.syncCommentsFromGitHub",
-          "group": "3_sync"
-        },
-        {
-          "command": "kubelingoassist.pushCommentsToGitHub",
-          "group": "3_sync"
         }
       ]
     }

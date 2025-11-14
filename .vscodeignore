@@ -4,6 +4,7 @@ src/**
 ui/**
 !ui/dist/**
 node_modules/**
+!node_modules/uuid/**
 docs/**
 .git/**
 .gitignore
@@ -13,7 +14,5 @@ vsc-extension-quickstart.md
 **/.eslintrc.json
 **/*.map
 **/*.ts
-**/*.json
-!package.json
-README.md
+ui/**/*.json
 package-lock.json
