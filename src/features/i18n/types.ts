@@ -25,9 +25,6 @@ export interface TranslationKeys {
     toggleSyncScroll: string;
     toggleKubelingo: string;
     changeMode: string;
-    configureAI: string;
-    showAPIKeyStatus: string;
-    translateSelected: string;
   };
 
   // Messages

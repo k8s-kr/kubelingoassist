@@ -4,8 +4,6 @@ export {
     TranslationUtils,
     TranslationCommandManager,
     ScrollSyncManager,
-    FileTranslationProgress,
-    // AI Service
-    AIService
+    FileTranslationProgress
 } from './features';
 export * from './validators';

@@ -17,9 +17,6 @@ export const en: TranslationResource = {
     toggleSyncScroll: 'Toggle Sync Scroll',
     toggleKubelingo: 'Toggle KubelingoAssist',
     changeMode: 'Change Mode',
-    configureAI: 'Configure AI',
-    showAPIKeyStatus: 'Show API Key Status',
-    translateSelected: 'Translate Selected Text',
   },
 
   messages: {
