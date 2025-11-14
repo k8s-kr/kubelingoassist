@@ -40,23 +40,86 @@
     "commands": [
       {
         "command": "kubelingoassist.openTranslationFile",
-        "title": "%commands.openTranslationFile%"
+        "title": "%commands.openTranslationFile%",
+        "when": "false"
       },
       {
         "command": "kubelingoassist.openReviewFile",
-        "title": "%commands.openReviewFile%"
+        "title": "%commands.openReviewFile%",
+        "when": "false"
       },
       {
         "command": "kubelingoassist.toggleSyncScroll",
-        "title": "%commands.toggleSyncScroll%"
+        "title": "%commands.toggleSyncScroll%",
+        "when": "false"
       },
       {
         "command": "kubelingoassist.toggleKubelingo",
-        "title": "%commands.toggleKubelingo%"
+        "title": "%commands.toggleKubelingo%",
+        "when": "false"
       },
       {
         "command": "kubelingoassist.changeMode",
-        "title": "%commands.changeMode%"
+        "title": "%commands.changeMode%",
+        "when": "false"
+      },
+      {
+        "command": "kubelingoassist.addReviewComment",
+        "title": "Add Review Comment",
+        "when": "false"
+      },
+      {
+        "command": "kubelingoassist.suggestChange",
+        "title": "Suggest Change",
+        "when": "false"
+      },
+      {
+        "command": "kubelingoassist.addTerminologyComment",
+        "title": "Add Terminology Comment",
+        "when": "false"
+      },
+      {
+        "command": "kubelingoassist.addGrammarComment",
+        "title": "Add Grammar Comment",
+        "when": "false"
+      },
+      {
+        "command": "kubelingoassist.addStyleComment",
+        "title": "Add Style Comment",
+        "when": "false"
+      },
+      {
+        "command": "kubelingoassist.addQuestionComment",
+        "title": "Ask Question",
+        "when": "false"
+      },
+      {
+        "command": "kubelingoassist.syncCommentsFromGitHub",
+        "title": "Sync Comments from GitHub PR"
+      },
+      {
+        "command": "kubelingoassist.pushCommentsToGitHub",
+        "title": "Push Comments to GitHub PR"
+      },
+      {
+        "command": "kubelingoassist.fetchPRInfo",
+        "title": "Fetch PR Info",
+        "when": "false"
+      },
+      {
+        "command": "kubelingoassist.openPRFile",
+        "title": "Open PR File",
+        "when": "false"
+      },
+      {
+        "command": "kubelingoassist.applySuggestion",
+        "title": "Apply Suggestion",
+        "when": "false"
+      },
+      {
+        "command": "kubelingoassist.rejectSuggestion",
+        "title": "Reject Suggestion",
+        "when": "false"
       }
     ],
     "keybindings": [
@@ -79,11 +142,59 @@
         "when": "editorTextFocus "
       }
     ],
+    "submenus": [
+      {
+        "id": "kubelingoassist.review",
+        "label": "Translation Review"
+      }
+    ],
     "menus": {
       "explorer/context": [
         {
           "command": "kubelingoassist.openTranslationFile",
           "when": "resourceExtname == .md"
+        }
+      ],
+      "editor/context": [
+        {
+          "submenu": "kubelingoassist.review",
+          "group": "kubelingoassist",
+          "when": "editorLangId == markdown"
+        }
+      ],
+      "kubelingoassist.review": [
+        {
+          "command": "kubelingoassist.addReviewComment",
+          "group": "1_comment"
+        },
+        {
+          "command": "kubelingoassist.suggestChange",
+          "group": "1_comment",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "kubelingoassist.addTerminologyComment",
+          "group": "2_specific"
+        },
+        {
+          "command": "kubelingoassist.addGrammarComment",
+          "group": "2_specific"
+        },
+        {
+          "command": "kubelingoassist.addStyleComment",
+          "group": "2_specific"
+        },
+        {
+          "command": "kubelingoassist.addQuestionComment",
+          "group": "2_specific"
+        },
+        {
+          "command": "kubelingoassist.syncCommentsFromGitHub",
+          "group": "3_sync"
+        },
+        {
+          "command": "kubelingoassist.pushCommentsToGitHub",
+          "group": "3_sync"
         }
       ]
     }
@@ -97,10 +208,14 @@
     "vscode:prepublish": "npm run compile",
     "package": "vsce package"
   },
+  "dependencies": {
+    "uuid": "^9.0.1"
+  },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
     "@types/node": "^16.18.126",
     "@types/node-fetch": "^2.6.13",
+    "@types/uuid": "^9.0.8",
     "@types/vscode": "^1.75.0",
     "@vscode/test-electron": "^2.5.2",
     "mocha": "^11.7.1",

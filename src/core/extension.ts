@@ -4,11 +4,13 @@ import { StatusBarManager } from '../features/ui/StatusBarManager';
 import { TranslationCommandManager } from '../features/translation/TranslationCommandManager';
 import { ScrollSyncManager } from '../features/translation/ScrollSyncManager';
 import { LinkValidator } from '../validators/link';
+import { ReviewCommandManager } from '../features/review';
 
 let statusBarManager: StatusBarManager;
 let linkValidator: LinkValidator;
 let translationCommandManager: TranslationCommandManager;
 let scrollSyncManager: ScrollSyncManager;
+let reviewCommandManager: ReviewCommandManager;
 
 export function activate(context: vscode.ExtensionContext) {
     // Status bar manager 초기화
@@ -23,6 +25,9 @@ export function activate(context: vscode.ExtensionContext) {
     // Scroll Sync Manager 초기화
     scrollSyncManager = new ScrollSyncManager();
 
+    // Review Command Manager 초기화
+    reviewCommandManager = new ReviewCommandManager();
+
     // Activity Bar 뷰 프로바이더 등록
     const provider = new TranslationViewProvider(context.extensionUri);
     context.subscriptions.push(
@@ -31,10 +36,12 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Commands 모듈에 의존성 설정
     translationCommandManager.setDependencies(statusBarManager, provider);
+    reviewCommandManager.setViewProvider(provider);
 
     // Commands 등록
     translationCommandManager.registerCommands(context);
-    
+    reviewCommandManager.registerCommands(context);
+
     // 저장된 상태로 초기화 (상태바, 웹뷰 동기화)
     translationCommandManager.initStateFromStorage(context);
     
@@ -85,5 +92,8 @@ export function deactivate() {
     }
     if (linkValidator) {
         linkValidator.dispose();
+    }
+    if (reviewCommandManager) {
+        reviewCommandManager.getCommentController().dispose();
     }
 }

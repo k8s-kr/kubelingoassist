@@ -7,12 +7,15 @@ interface WebviewMessage {
   type: string;
   payload?: any;
   mode?: 'translation' | 'review';
+  prNumber?: number;
+  reviewEvent?: 'APPROVE' | 'COMMENT' | 'REQUEST_CHANGES';
 }
 
 interface WebviewState {
   syncScrollEnabled: boolean;
   kubelingoEnabled: boolean;
   mode: 'translation' | 'review';
+  currentPR?: number;
 }
 
 interface WebviewConfig {
@@ -24,6 +27,9 @@ interface WebviewConfig {
     TOGGLE_SYNC_SCROLL: string;
     TOGGLE_KUBELINGO: string;
     CHANGE_MODE: string;
+    FETCH_PR_INFO: string;
+    OPEN_PR_FILE: string;
+    PUSH_COMMENTS_TO_GITHUB: string;
   };
   FILES: {
     MAIN_JS: string;
@@ -41,6 +47,9 @@ const WEBVIEW_CONFIG: WebviewConfig = {
     TOGGLE_SYNC_SCROLL: 'kubelingoassist.toggleSyncScroll',
     TOGGLE_KUBELINGO: 'kubelingoassist.toggleKubelingo',
     CHANGE_MODE: 'kubelingoassist.changeMode',
+    FETCH_PR_INFO: 'kubelingoassist.fetchPRInfo',
+    OPEN_PR_FILE: 'kubelingoassist.openPRFile',
+    PUSH_COMMENTS_TO_GITHUB: 'kubelingoassist.pushCommentsToGitHub',
   },
   FILES: {
     MAIN_JS: 'main.js',
@@ -114,6 +123,22 @@ export class TranslationViewProvider implements vscode.WebviewViewProvider {
     this._updateState(partialState);
   }
 
+  public sendPRInfo(prInfo: any) {
+    for (const view of this.views) {
+      if (view.visible) {
+        view.webview.postMessage({ type: 'prInfo', payload: prInfo });
+      }
+    }
+  }
+
+  public sendPRList(prList: any[]) {
+    for (const view of this.views) {
+      if (view.visible) {
+        view.webview.postMessage({ type: 'prList', payload: prList });
+      }
+    }
+  }
+
   private _updateState(partialState: Partial<WebviewState>) {
     this.state = { ...this.state, ...partialState };
     this._broadcast();
@@ -144,6 +169,9 @@ export class TranslationViewProvider implements vscode.WebviewViewProvider {
           this._executeCommand(WEBVIEW_CONFIG.COMMANDS.TOGGLE_KUBELINGO);
         },
         changeMode: () => this._executeCommand(WEBVIEW_CONFIG.COMMANDS.CHANGE_MODE, msg.mode),
+        fetchPRInfo: () => this._executeCommand(WEBVIEW_CONFIG.COMMANDS.FETCH_PR_INFO, msg.prNumber),
+        openPRFile: () => this._executeCommand(WEBVIEW_CONFIG.COMMANDS.OPEN_PR_FILE, msg.payload),
+        pushCommentsToGitHub: () => this._executeCommand(WEBVIEW_CONFIG.COMMANDS.PUSH_COMMENTS_TO_GITHUB, msg.reviewEvent),
         aiChat: () => {
           const message = msg?.payload?.message ?? '';
           notificationManager.showInfo('notifications.info.aiChatMessage', { message });

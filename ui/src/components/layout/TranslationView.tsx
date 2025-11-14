@@ -5,7 +5,6 @@ import { KubelingoMode, KUBELINGO_MODES } from '../../types/modes';
 
 interface TranslationAppState {
   isSyncScrollEnabled: boolean;
-  isKubelingoEnabled: boolean;
   currentMode: KubelingoMode;
 }
 
@@ -14,8 +13,9 @@ export const TranslationView: React.FC = () => {
     openTranslationFile: handleOpenTranslation,
     openReviewFile: handleOpenReviewFile,
     toggleSyncScroll: handleToggleSyncScroll,
-    toggleKubelingo: handleToggleKubelingo,
     changeMode: handleChangeMode,
+    fetchPRInfo: handleFetchPRInfo,
+    pushCommentsToGitHub: handlePushCommentsToGitHub,
     initialState,
     vscodeGetState,
     vscodeSetState,
@@ -23,7 +23,6 @@ export const TranslationView: React.FC = () => {
 
   const [translationAppState, setTranslationAppState] = useState<TranslationAppState>({
     isSyncScrollEnabled: false,
-    isKubelingoEnabled: true,
     currentMode: KUBELINGO_MODES.TRANSLATION,
   });
 
@@ -34,7 +33,6 @@ export const TranslationView: React.FC = () => {
       setTranslationAppState(previousState => ({
         ...previousState,
         isSyncScrollEnabled: typeof savedState.syncScrollEnabled === 'boolean' ? savedState.syncScrollEnabled : previousState.isSyncScrollEnabled,
-        isKubelingoEnabled: typeof savedState.kubelingoEnabled === 'boolean' ? savedState.kubelingoEnabled : previousState.isKubelingoEnabled,
         currentMode: savedState.mode && Object.values(KUBELINGO_MODES).includes(savedState.mode) ? savedState.mode : previousState.currentMode,
       }));
     } else if (initialState) {
@@ -42,7 +40,6 @@ export const TranslationView: React.FC = () => {
       setTranslationAppState(previousState => ({
         ...previousState,
         isSyncScrollEnabled: typeof initialState.syncScrollEnabled === 'boolean' ? initialState.syncScrollEnabled : previousState.isSyncScrollEnabled,
-        isKubelingoEnabled: typeof initialState.kubelingoEnabled === 'boolean' ? initialState.kubelingoEnabled : previousState.isKubelingoEnabled,
         currentMode: initialState.mode && Object.values(KUBELINGO_MODES).includes(initialState.mode) ? initialState.mode : previousState.currentMode,
       }));
     }
@@ -51,14 +48,13 @@ export const TranslationView: React.FC = () => {
     const messageListener = (event: MessageEvent) => {
       const message = event.data;
       if (message?.type === 'stateUpdate' && message?.payload) {
-        const { syncScrollEnabled: nextSyncEnabled, kubelingoEnabled: nextKubelingoEnabled, mode: nextMode } = message.payload;
-        
+        const { syncScrollEnabled: nextSyncEnabled, mode: nextMode } = message.payload;
+
         setTranslationAppState(previousState => {
           const updatedState = { ...previousState };
           if (typeof nextSyncEnabled === 'boolean') updatedState.isSyncScrollEnabled = nextSyncEnabled;
-          if (typeof nextKubelingoEnabled === 'boolean') updatedState.isKubelingoEnabled = nextKubelingoEnabled;
           if (nextMode && Object.values(KUBELINGO_MODES).includes(nextMode)) updatedState.currentMode = nextMode;
-          
+
           // 수신 즉시 웹뷰 로컬에도 저장
           vscodeSetState?.(updatedState);
           return updatedState;
@@ -76,35 +72,21 @@ export const TranslationView: React.FC = () => {
     vscodeSetState?.(translationAppState);
   }, [translationAppState, vscodeSetState]);
 
-  const onToggleSyncScroll = () => {
-    // 실제 토글은 확장에서 수행 → stateUpdate 수신 후 위에서 반영
-    handleToggleSyncScroll();
-  };
-
-  const onToggleKubelingo = () => {
-    console.log('onToggleKubelingo called');
-    // Send command to extension to toggle kubelingo
-    console.log('Sending toggleKubelingo message to extension');
-    handleToggleKubelingo();
-  };
-
   const onModeChange = (newMode: KubelingoMode) => {
-    // Send command to extension to change mode
     handleChangeMode(newMode);
   };
-
 
   return (
     <div>
       <TranslationControlSection
         isSyncScrollEnabled={translationAppState.isSyncScrollEnabled}
-        isKubelingoEnabled={translationAppState.isKubelingoEnabled}
         currentMode={translationAppState.currentMode}
         onOpenTranslationFile={handleOpenTranslation}
         onOpenReviewFile={handleOpenReviewFile}
-        onToggleSyncScroll={onToggleSyncScroll}
-        onToggleKubelingo={onToggleKubelingo}
+        onToggleSyncScroll={handleToggleSyncScroll}
         onModeChange={onModeChange}
+        onFetchPRInfo={handleFetchPRInfo}
+        onPushCommentsToGitHub={handlePushCommentsToGitHub}
       />
     </div>
   );
