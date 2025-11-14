@@ -1,0 +1,7 @@
+{
+  "commands.openTranslationFile": "Open Translation File",
+  "commands.openReviewFile": "Open Review File",
+  "commands.toggleSyncScroll": "Toggle Synchronized Scroll",
+  "commands.toggleKubelingo": "Toggle KubeLingoAssist",
+  "commands.changeMode": "Change Mode"
+}

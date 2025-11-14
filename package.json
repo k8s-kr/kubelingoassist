@@ -40,23 +40,33 @@
     "commands": [
       {
         "command": "kubelingoassist.openTranslationFile",
-        "title": "%commands.openTranslationFile%"
+        "title": "%commands.openTranslationFile%",
+        "when": "false"
       },
       {
         "command": "kubelingoassist.openReviewFile",
-        "title": "%commands.openReviewFile%"
+        "title": "%commands.openReviewFile%",
+        "when": "false"
       },
       {
         "command": "kubelingoassist.toggleSyncScroll",
-        "title": "%commands.toggleSyncScroll%"
+        "title": "%commands.toggleSyncScroll%",
+        "when": "false"
       },
       {
         "command": "kubelingoassist.toggleKubelingo",
-        "title": "%commands.toggleKubelingo%"
+        "title": "%commands.toggleKubelingo%",
+        "when": "false"
       },
       {
         "command": "kubelingoassist.changeMode",
-        "title": "%commands.changeMode%"
+        "title": "%commands.changeMode%",
+        "when": "false"
+      },
+      {
+        "command": "kubelingoassist.fetchPRInfo",
+        "title": "Fetch PR Info",
+        "category": "PR"
       }
     ],
     "keybindings": [
@@ -97,10 +107,14 @@
     "vscode:prepublish": "npm run compile",
     "package": "vsce package"
   },
+  "dependencies": {
+    "uuid": "^9.0.1"
+  },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
     "@types/node": "^16.18.126",
     "@types/node-fetch": "^2.6.13",
+    "@types/uuid": "^9.0.8",
     "@types/vscode": "^1.75.0",
     "@vscode/test-electron": "^2.5.2",
     "mocha": "^11.7.1",

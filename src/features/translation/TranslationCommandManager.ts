@@ -22,6 +22,7 @@ export class TranslationCommandManager {
 
     private statusBarManager: StatusBarManager | null = null;
     private translationViewProvider: TranslationViewProvider | null = null;
+    private prInfoService: any | null = null;
     private context: vscode.ExtensionContext | null = null;
     private translationUtils: TranslationUtils;
     private scrollSyncManager: ScrollSyncManager;
@@ -36,10 +37,12 @@ export class TranslationCommandManager {
      */
     setDependencies(
         statusBarManager: StatusBarManager,
-        translationViewProvider: TranslationViewProvider
+        translationViewProvider: TranslationViewProvider,
+        prInfoService?: any
     ): void {
         this.statusBarManager = statusBarManager;
         this.translationViewProvider = translationViewProvider;
+        this.prInfoService = prInfoService;
     }
 
     /**
@@ -48,17 +51,20 @@ export class TranslationCommandManager {
     initStateFromStorage(context: vscode.ExtensionContext): void {
         this.context = context;
         this.isSyncScrollEnabled = context.workspaceState.get<boolean>(
-            TranslationCommandManager.KEY_SYNC, 
+            TranslationCommandManager.KEY_SYNC,
             false
         );
         this.isKubelingoEnabled = context.workspaceState.get<boolean>(
-            TranslationCommandManager.KEY_KUBELINGO, 
+            TranslationCommandManager.KEY_KUBELINGO,
             true
         );
         this.currentMode = context.workspaceState.get<'translation' | 'review'>(
-            TranslationCommandManager.KEY_MODE, 
+            TranslationCommandManager.KEY_MODE,
             'translation'
         );
+
+        // VS Code context 초기 설정 (버튼 표시 제어용)
+        vscode.commands.executeCommand('setContext', 'kubelingoassist.reviewMode', this.currentMode === 'review');
 
         this.initializeGitUtils();
         this.syncWebviewState();
@@ -190,13 +196,19 @@ export class TranslationCommandManager {
             }
 
             const selectedFile = await this.showFileSelectionDialog(commitInfo);
+            console.log('[OpenReviewFile] Selected file:', selectedFile);
+
             if (selectedFile) {
-                console.log('Selected file for review:', selectedFile.filePath);
+                console.log('[OpenReviewFile] Opening file for review:', selectedFile.filePath);
                 await this.openFileInReviewMode(selectedFile.filePath);
+
+                if (commitInfo.prNumber) {
+                    vscode.window.showInformationMessage(`PR #${commitInfo.prNumber}`);
+                }
             }
         } catch (error) {
-            i18n.showErrorMessage('messages.failedToGetRecentCommits', { 
-                error: String(error) 
+            i18n.showErrorMessage('messages.failedToGetRecentCommits', {
+                error: String(error)
             });
         }
     }
@@ -245,7 +257,7 @@ export class TranslationCommandManager {
     /**
      * 모드를 변경합니다.
      */
-    private changeMode(mode: 'translation' | 'review'): void {
+    private async changeMode(mode: 'translation' | 'review'): Promise<void> {
         if (!this.isKubelingoEnabled) {
             i18n.showInformationMessage('messages.kubelingoDisabled');
             return;
@@ -253,7 +265,10 @@ export class TranslationCommandManager {
 
         this.currentMode = mode;
 
-        const messageKey = mode === 'review' 
+        // VS Code context 설정 (버튼 표시 제어용)
+        vscode.commands.executeCommand('setContext', 'kubelingoassist.reviewMode', mode === 'review');
+
+        const messageKey = mode === 'review'
             ? 'messages.reviewModeEnabled'
             : 'messages.translationModeEnabled';
         i18n.showInformationMessage(messageKey);
@@ -265,7 +280,7 @@ export class TranslationCommandManager {
     /**
      * 리뷰 모드에서 파일을 엽니다.
      */
-    private async openFileInReviewMode(filePath: string): Promise<void> {
+    async openFileInReviewMode(filePath: string): Promise<void> {
         if (!this.gitService) {
             i18n.showErrorMessage('messages.gitUtilitiesNotAvailable');
             return;
@@ -321,7 +336,18 @@ export class TranslationCommandManager {
             return null;
         }
 
-        return { ...commitInfo, files: translationFiles };
+        // PR 번호 가져오기
+        let prNumber: number | null = null;
+        if (this.prInfoService) {
+            try {
+                prNumber = await this.prInfoService.getCurrentPRNumber();
+                console.log('[OpenReviewFile] Detected PR number:', prNumber);
+            } catch (error) {
+                console.warn('[OpenReviewFile] Could not detect PR number:', error);
+            }
+        }
+
+        return { ...commitInfo, files: translationFiles, prNumber };
     }
 
     private async showFileSelectionDialog(commitInfo: any) {

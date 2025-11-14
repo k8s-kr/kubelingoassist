@@ -62,6 +62,10 @@ export const useTranslationVSCodeAPI = () => {
     sendMessageToExtension({ type: 'changeMode', mode });
   }, [sendMessageToExtension]);
 
+  const fetchPRInfo = useCallback((prNumber: number) => {
+    sendMessageToExtension({ type: 'fetchPRInfo', prNumber });
+  }, [sendMessageToExtension]);
+
   return {
     // Extension command wrappers
     openTranslationFile,
@@ -69,6 +73,7 @@ export const useTranslationVSCodeAPI = () => {
     toggleSyncScroll,
     toggleKubelingo,
     changeMode,
+    fetchPRInfo,
 
     // Raw VSCode API reference (if needed)
     vscodeApi: vscodeApiRef.current,

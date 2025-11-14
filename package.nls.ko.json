@@ -1,0 +1,7 @@
+{
+  "commands.openTranslationFile": "번역 파일 열기",
+  "commands.openReviewFile": "리뷰 파일 열기",
+  "commands.toggleSyncScroll": "동기화 스크롤 토글",
+  "commands.toggleKubelingo": "KubeLingoAssist 토글",
+  "commands.changeMode": "모드 변경"
+}
