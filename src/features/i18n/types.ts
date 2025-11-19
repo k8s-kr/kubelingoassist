@@ -149,6 +149,19 @@ export interface TranslationKeys {
       on: string;
       off: string;
     };
+    translationPanel: {
+      modes: {
+        translation: string;
+        review: string;
+      };
+      buttons: {
+        openTranslationFile: string;
+        openReviewFile: string;
+        syncOn: string;
+        syncOff: string;
+        fetchPR: string;
+      };
+    };
   };
 
   // File paths and extensions
@@ -180,7 +193,7 @@ export interface LanguageInfo {
 /**
  * 지원되는 언어 코드 배열입니다.
  */
-export const SUPPORTED_LANGUAGES: SupportedLanguage[] = ['ko', 'ja', 'zh-cn', 'zh', 'fr', 'de', 'es'];
+export const SUPPORTED_LANGUAGES: SupportedLanguage[] = ['en', 'ko', 'ja', 'zh-cn', 'zh', 'fr', 'de', 'es'];
 
 /**
  * 언어 선택을 위한 옵션 배열입니다.

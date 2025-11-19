@@ -1,13 +1,22 @@
-import { SupportedLanguage, UITranslationResource } from './types';
-import { en } from './resources/en';
-import { ko } from './resources/ko';
+import { TranslationResource, SupportedLanguage } from '@shared-i18n/types';
+import { en } from '@shared-i18n/resources/en';
+import { ko } from '@shared-i18n/resources/ko';
+import { ja } from '@shared-i18n/resources/ja';
+
+const sharedResources: Record<SupportedLanguage, TranslationResource> = {
+  en,
+  ko,
+  ja,
+  'zh-cn': en,
+  'zh': en,
+  'fr': en,
+  'de': en,
+  'es': en,
+};
 
 class UIi18n {
-  private currentLanguage: SupportedLanguage = 'ko';
-  private resources: Record<SupportedLanguage, UITranslationResource> = {
-    'en': en,
-    'ko': ko,
-  };
+  private currentLanguage: SupportedLanguage = 'en';
+  private resources: Record<SupportedLanguage, TranslationResource> = sharedResources;
 
   private constructor() {
     this.initializeLanguage();
@@ -23,19 +32,18 @@ class UIi18n {
   }
 
   private initializeLanguage(): void {
-    // Try to get language from browser or VS Code
-    const browserLang = navigator.language || 'en';
+    const browserLang = (navigator.language ?? 'en').toLowerCase();
     const baseLang = browserLang.split('-')[0];
-    
-    if (this.isSupportedLanguage(baseLang)) {
+
+    if (this.isSupportedLanguage(browserLang)) {
+      this.currentLanguage = browserLang;
+    } else if (this.isSupportedLanguage(baseLang)) {
       this.currentLanguage = baseLang as SupportedLanguage;
-    } else {
-      this.currentLanguage = 'ko'; // Default to Korean
     }
   }
 
   private isSupportedLanguage(lang: string): lang is SupportedLanguage {
-    return Object.keys(this.resources).includes(lang);
+    return Object.prototype.hasOwnProperty.call(this.resources, lang);
   }
 
   public getCurrentLanguage(): SupportedLanguage {

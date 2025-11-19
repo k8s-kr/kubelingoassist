@@ -8,7 +8,7 @@ interface StatusBarProps {
 }
 
 export const StatusBar: React.FC<StatusBarProps> = ({ 
-  text = uiI18n.t('status.kubelingoAssist'),
+  text = uiI18n.t('ui.status.kubelingoAssist'),
   kubelingoEnabled,
   onToggleKubelingo 
 }) => {
@@ -20,7 +20,7 @@ export const StatusBar: React.FC<StatusBarProps> = ({
           className={`status-toggle ${kubelingoEnabled ? 'status-toggle-on' : 'status-toggle-off'}`}
           onClick={onToggleKubelingo}
         >
-          {kubelingoEnabled ? uiI18n.t('status.on') : uiI18n.t('status.off')}
+          {kubelingoEnabled ? uiI18n.t('ui.status.on') : uiI18n.t('ui.status.off')}
         </button>
       )}
     </div>

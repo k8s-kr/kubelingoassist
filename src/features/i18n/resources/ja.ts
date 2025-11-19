@@ -138,6 +138,19 @@ export const ja: TranslationResource = {
       on: 'ON',
       off: 'OFF',
     },
+    translationPanel: {
+      modes: {
+        translation: '翻訳モード',
+        review: 'レビューモード',
+      },
+      buttons: {
+        openTranslationFile: '🔄 翻訳ファイルを開く',
+        openReviewFile: '📋 レビューファイルを開く',
+        syncOn: '🔄 同期 ON',
+        syncOff: '🔄 同期 OFF',
+        fetchPR: 'PRを取得する',
+      },
+    },
   },
 
   paths: {

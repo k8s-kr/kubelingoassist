@@ -138,6 +138,19 @@ export const en: TranslationResource = {
       on: 'ON',
       off: 'OFF',
     },
+    translationPanel: {
+      modes: {
+        translation: 'Translation Mode',
+        review: 'Review Mode',
+      },
+      buttons: {
+        openTranslationFile: '🔄 Open Translation File',
+        openReviewFile: '📋 Open Review File',
+        syncOn: '🔄 Sync ON',
+        syncOff: '🔄 Sync OFF',
+        fetchPR: 'Fetch PR',
+      },
+    },
   },
 
   paths: {

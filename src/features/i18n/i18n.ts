@@ -2,17 +2,18 @@ import * as vscode from 'vscode';
 import { TranslationKeys, SupportedLanguage, TranslationResource } from './types';
 import { en } from './resources/en';
 import { ko } from './resources/ko';
+import { ja } from './resources/ja';
 
 /**
  * 다국어 지원을 위한 국제화(i18n) 클래스입니다.
  */
 export class I18n {
     private static instance: I18n;
-    private currentLanguage: SupportedLanguage = 'ko';
+    private currentLanguage: SupportedLanguage;
     private resources: Record<SupportedLanguage, TranslationResource> = {
         'en': en,
         'ko': ko,
-        'ja': en,
+        'ja': ja,
         'zh-cn': en, // TODO: Add Chinese Simplified
         'zh': en,    // TODO: Add Chinese Traditional
         'fr': en,    // TODO: Add French
@@ -21,7 +22,7 @@ export class I18n {
     };
 
     private constructor() {
-        this.initializeLanguage();
+        this.currentLanguage = this.initializeLanguage();
     }
 
     /**
@@ -37,20 +38,20 @@ export class I18n {
     /**
      * VS Code 설정에서 언어를 초기화합니다.
      */
-    private initializeLanguage(): void {
-        // VS Code의 언어 설정을 가져옵니다
-        const vsCodeLang = vscode.env.language;
-        
-        // 지원되는 언어인지 확인하고 설정
+    private initializeLanguage(): SupportedLanguage {
+        const vsCodeLang = (vscode.env.language ?? 'en').toLowerCase();
+        const baseLang = vsCodeLang.split('-')[0];
+
+        let resolvedLanguage: SupportedLanguage = 'en';
+
         if (this.isSupportedLanguage(vsCodeLang)) {
-            this.currentLanguage = vsCodeLang;
-        } else {
-            // 언어 코드의 첫 부분만 확인 (예: 'ko-KR' -> 'ko')
-            const baseLang = vsCodeLang.split('-')[0];
-            if (this.isSupportedLanguage(baseLang)) {
-                this.currentLanguage = baseLang as SupportedLanguage;
-            }
+            resolvedLanguage = vsCodeLang;
+        } else if (this.isSupportedLanguage(baseLang)) {
+            resolvedLanguage = baseLang as SupportedLanguage;
         }
+
+        console.log('[KubeLingoAssist][I18n] VS Code language:', vscode.env.language, '→ resolved:', resolvedLanguage);
+        return resolvedLanguage;
     }
 
     /**
@@ -72,6 +73,7 @@ export class I18n {
      */
     public setLanguage(language: SupportedLanguage): void {
         this.currentLanguage = language;
+        console.log('[KubeLingoAssist][I18n] Language manually set to:', language);
     }
 
     /**

@@ -1,6 +1,7 @@
 // src/webview-providers.ts
 import * as vscode from 'vscode';
 import { notificationManager } from '../notifications';
+import { i18n, SupportedLanguage } from '../i18n';
 
 // Types and Interfaces
 interface WebviewMessage {
@@ -15,6 +16,7 @@ interface WebviewState {
   syncScrollEnabled: boolean;
   kubelingoEnabled: boolean;
   mode: 'translation' | 'review';
+  language: SupportedLanguage;
   currentPR?: number;
 }
 
@@ -67,6 +69,7 @@ export class TranslationViewProvider implements vscode.WebviewViewProvider {
     syncScrollEnabled: false,
     kubelingoEnabled: false,
     mode: 'translation',
+    language: i18n.getCurrentLanguage(),
   };
 
   constructor(private readonly _extensionUri: vscode.Uri) {}
@@ -117,6 +120,10 @@ export class TranslationViewProvider implements vscode.WebviewViewProvider {
 
   public setMode(mode: 'translation' | 'review') {
     this._updateState({ mode });
+  }
+
+  public setLanguage(language: SupportedLanguage) {
+    this._updateState({ language });
   }
 
   public broadcastState(partialState: Partial<WebviewState>) {
