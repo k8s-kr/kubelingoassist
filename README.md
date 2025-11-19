@@ -5,8 +5,14 @@ A VS Code extension for Kubernetes documentation translation workflows.
 ## Installation & Usage
 
 ### Installation
-1. Download the latest VSIX file from [Releases](https://github.com/eundms/kubelingoassist/releases)
-2. Install in VS Code: `code --install-extension kubelingoassist-x.x.x.vsix`
+1. Download the latest VSIX file from Releases
+- First, download the ZIP file from the [release page](https://github.com/eundms/kubelingoassist/releases).
+- Extract the `.vsix file` from the ZIP.
+2. Install in VS Code
+- Run the following command in VsCode from the location of the .vsix file for the corresponding release version:
+```md
+code --install-extension kubelingoassist-x.x.x.vsix
+```
 
 ### Key Features
 - **Open Translation Files**: `Cmd+Shift+T` (Mac) / `Ctrl+Shift+T` (Windows/Linux)
