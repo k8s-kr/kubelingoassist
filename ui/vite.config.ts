@@ -1,9 +1,20 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import path from 'path'
 
 export default defineConfig({
   plugins: [react()],
   base: './',                    // ✅ webview에서 상대경로 안전
+  resolve: {
+    alias: {
+      '@shared-i18n': path.resolve(__dirname, '../src/features/i18n'),
+    },
+  },
+  server: {
+    fs: {
+      allow: ['..'],
+    },
+  },
   build: {
     outDir: 'dist',
     cssCodeSplit: false,         // ✅ CSS 한 파일로 강제

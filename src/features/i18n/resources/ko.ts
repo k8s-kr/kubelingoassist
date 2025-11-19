@@ -138,6 +138,19 @@ export const ko: TranslationResource = {
       on: '켜짐',
       off: '꺼짐',
     },
+    translationPanel: {
+      modes: {
+        translation: '번역 모드',
+        review: '리뷰 모드',
+      },
+      buttons: {
+        openTranslationFile: '🔄 번역 파일 열기',
+        openReviewFile: '📋 리뷰 파일 열기',
+        syncOn: '🔄 동기화 ON',
+        syncOff: '🔄 동기화 OFF',
+        fetchPR: 'PR 가져오기',
+      },
+    },
   },
 
   paths: {

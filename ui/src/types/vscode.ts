@@ -31,7 +31,7 @@ export type VSCodeOutboundMessage =
 
 // 확장 -> 웹뷰 로 들어오는 메시지(인바운드)
 export type VSCodeInboundMessage =
-  | { type: 'stateUpdate'; payload: { syncScrollEnabled: boolean } }
+  | { type: 'stateUpdate'; payload: { syncScrollEnabled: boolean; mode?: string; language?: string } }
   // 필요 시 다른 브로드캐스트 메시지를 여기에 추가
   ;
 
