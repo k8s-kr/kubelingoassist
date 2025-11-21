@@ -65,7 +65,7 @@ export const TranslationControlSection: React.FC<TranslationControlSectionProps>
           <div className="button-group">
             <input
               type="number"
-              placeholder="PR #"
+              placeholder={uiI18n.t('ui.translationPanel.placeholder.prNumber')}
               value={prNumber}
               onChange={(e) => setPrNumber(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleFetchPR()}
@@ -78,13 +78,13 @@ export const TranslationControlSection: React.FC<TranslationControlSectionProps>
                 width: '80px',
                 fontSize: '13px'
               }}
-              aria-label="PR number input"
+              aria-label={uiI18n.t('ui.translationPanel.accessibility.prNumberInput')}
             />
             <ControlButton
               variant="primary"
               onClick={handleFetchPR}
               disabled={!prNumber || isNaN(parseInt(prNumber))}
-              aria-label="Fetch PR by number"
+              aria-label={uiI18n.t('ui.translationPanel.accessibility.fetchPRByNumber')}
             >
               {uiI18n.t('ui.translationPanel.buttons.fetchPR')}
             </ControlButton>
