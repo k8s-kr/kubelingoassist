@@ -54,6 +54,9 @@ export interface TranslationKeys {
     failedToOpenReviewMode: string;
     failedToGetRecentCommits: string;
     couldNotDetermineOriginalPath: string;
+    reviewFileNotTranslationFile: string;
+    couldNotFindEnglishFile: string;
+    englishFileNotFound: string;
     notKubernetesRepo: string;
     kubernetesRepoOnly: string;
     pr: {

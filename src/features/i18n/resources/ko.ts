@@ -45,6 +45,9 @@ export const ko: TranslationResource = {
     failedToOpenReviewMode: '리뷰 모드로 파일을 여는데 실패했습니다: {error}',
     failedToGetRecentCommits: '최근 커밋을 가져오는데 실패했습니다: {error}',
     couldNotDetermineOriginalPath: '원본 영어 파일 경로를 확인할 수 없습니다',
+    reviewFileNotTranslationFile: '현재 파일이 번역 파일이 아닙니다. 번역 파일(content/{언어}/)을 열어주세요.',
+    couldNotFindEnglishFile: '영문 원본 파일 경로를 찾을 수 없습니다.',
+    englishFileNotFound: '영문 원본 파일을 찾을 수 없습니다: {path}',
     notKubernetesRepo: '해당 기능은 Kubernetes 문서 저장소(kubernetes/website)에서만 작동합니다. 번역 기능을 사용하려면 kubernetes/website 저장소를 열어주세요.',
     kubernetesRepoOnly: '해당 기능은 Kubernetes 문서 저장소(kubernetes/website)에서만 작동합니다. 리뷰 모드를 사용하려면 kubernetes/website 저장소를 열어주세요.',
     pr: {

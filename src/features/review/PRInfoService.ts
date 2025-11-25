@@ -516,8 +516,35 @@ export class PRInfoService {
 
     /**
      * PR의 번역 파일만 필터링
+     * @param files - PR 파일 목록
+     * @param lang - 언어 코드 ('ko', 'ja' 등) 또는 'all' (모든 번역 언어 포함), 기본값은 'all'
      */
-    filterTranslationFiles(files: PRFileChange[], lang: string = 'ko'): PRFileChange[] {
+    filterTranslationFiles(files: PRFileChange[], lang: string = 'all'): PRFileChange[] {
+        // 'all'인 경우 모든 번역 언어 포함 (en 제외)
+        if (lang === 'all') {
+            return files.filter(file => {
+                const path = file.path.toLowerCase();
+                // content/{lang}/ 패턴에서 en이 아닌 모든 언어 포함
+                const langMatch = path.match(/\/content\/([^/]+)\//);
+                if (langMatch) {
+                    const detectedLang = langMatch[1];
+                    // 영어 파일은 제외하고, 다른 모든 언어 포함
+                    return detectedLang !== 'en' && (
+                        path.includes(`content/${detectedLang}/`) ||
+                        path.includes(`i18n/${detectedLang}/`)
+                    );
+                }
+                // i18n/{lang}/ 패턴도 확인
+                const i18nMatch = path.match(/\/i18n\/([^/]+)\//);
+                if (i18nMatch) {
+                    const detectedLang = i18nMatch[1];
+                    return detectedLang !== 'en';
+                }
+                return false;
+            });
+        }
+
+        // 특정 언어만 필터링
         return files.filter(file => {
             const path = file.path.toLowerCase();
             // content/ko/ 또는 /content/ko/ 패턴
@@ -538,8 +565,10 @@ export class PRInfoService {
     /**
      * PR에서 리뷰가 필요한 파일 추천
      * (번역 파일 중 마크다운만)
+     * @param files - PR 파일 목록
+     * @param lang - 언어 코드 ('ko', 'ja' 등) 또는 'all' (모든 번역 언어 포함), 기본값은 'all'
      */
-    getReviewableFiles(files: PRFileChange[], lang: string = 'ko'): PRFileChange[] {
+    getReviewableFiles(files: PRFileChange[], lang: string = 'all'): PRFileChange[] {
         return this.filterMarkdownFiles(
             this.filterTranslationFiles(files, lang)
         );

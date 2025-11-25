@@ -45,6 +45,9 @@ export const en: TranslationResource = {
     failedToOpenReviewMode: 'Failed to open file in review mode: {error}',
     failedToGetRecentCommits: 'Failed to get recent commits: {error}',
     couldNotDetermineOriginalPath: 'Could not determine original English file path',
+    reviewFileNotTranslationFile: 'Current file is not a translation file. Please open a translation file (content/{language}/).',
+    couldNotFindEnglishFile: 'Could not find English original file path.',
+    englishFileNotFound: 'English original file not found: {path}',
     notKubernetesRepo: 'This extension only works with the Kubernetes documentation repository (kubernetes/website). Please open the kubernetes/website repository to use translation features.',
     kubernetesRepoOnly: 'This extension only works with the Kubernetes documentation repository (kubernetes/website). Please open the kubernetes/website repository to use review mode.',
     pr: {

@@ -45,6 +45,9 @@ export const ja: TranslationResource = {
     failedToOpenReviewMode: 'レビューモードでファイルを開くのに失敗しました: {error}',
     failedToGetRecentCommits: '最近のコミットの取得に失敗しました: {error}',
     couldNotDetermineOriginalPath: '元の英語ファイルパスを特定できませんでした',
+    reviewFileNotTranslationFile: '現在のファイルは翻訳ファイルではありません。翻訳ファイル(content/{言語}/)を開いてください。',
+    couldNotFindEnglishFile: '英語の元ファイルパスが見つかりませんでした。',
+    englishFileNotFound: '英語の元ファイルが見つかりません: {path}',
     notKubernetesRepo: 'この機能はKubernetesドキュメントリポジトリ (kubernetes/website) で動作します。翻訳機能を使用するには kubernetes/website リポジトリを開いてください。',
     kubernetesRepoOnly: 'この機能はKubernetesドキュメントリポジトリ (kubernetes/website) で動作します。レビューモードを使用するには kubernetes/website リポジトリを開いてください。',
     pr: {

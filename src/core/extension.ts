@@ -49,41 +49,48 @@ function registerPRCommands(context: vscode.ExtensionContext) {
                         return;
                     }
 
-                    // 번역 파일만 필터링
-                    const translationFiles = prInfoService.getReviewableFiles(prDetails.files);
-
-                    if (translationFiles.length === 0) {
-                        i18n.showWarningMessage('messages.pr.noTranslationFilesInPR', {
-                            number: String(prNumber),
-                            title: prDetails.title
-                        });
-                        return;
-                    }
-
                     // PR 브랜치로 체크아웃
                     i18n.showInformationMessage('messages.pr.checkingOutPR', { number: String(prNumber) });
                     await prInfoService.checkoutPR(prNumber, prDetails.title);
 
-                    // 첫 번째 번역 파일 열기 (원문과 함께 Split View로)
-                    const firstFile = translationFiles[0];
+                    // PR의 변경된 파일들 모두 열기
                     const workspaceFolders = vscode.workspace.workspaceFolders;
                     if (!workspaceFolders || workspaceFolders.length === 0) {
                         i18n.showErrorMessage('messages.noActiveFile');
                         return;
                     }
 
-                    const translationFilePath = `${workspaceFolders[0].uri.fsPath}/${firstFile.path}`;
+                    const workspaceRoot = workspaceFolders[0].uri.fsPath;
+                    let openedCount = 0;
+                    let skippedCount = 0;
 
-                    // TranslationCommandManager의 openFileInReviewMode 사용 (기존 로직 재사용)
-                    await translationCommandManager.openFileInReviewMode(translationFilePath);
+                    // 마크다운 파일만 필터링
+                    const markdownFiles = prInfoService.filterMarkdownFiles(prDetails.files);
+
+                    // PR의 변경된 파일들 모두 열기 (영문 파일과 함께 열지 않음)
+                    for (const file of markdownFiles) {
+                        try {
+                            const filePath = `${workspaceRoot}/${file.path}`;
+                            const fileUri = vscode.Uri.file(filePath);
+                            await vscode.commands.executeCommand('vscode.open', fileUri);
+                            openedCount++;
+                        } catch (error) {
+                            console.error(`Failed to open file ${file.path}:`, error);
+                            skippedCount++;
+                        }
+                    }
 
                     i18n.showInformationMessage('messages.pr.prFetchedSuccess', {
                         number: String(prNumber),
                         title: prDetails.title,
-                        count: String(translationFiles.length),
+                        count: String(openedCount),
                         author: prDetails.author,
                         state: prDetails.state
                     });
+
+                    if (skippedCount > 0) {
+                        console.warn(`Skipped ${skippedCount} file(s) due to errors`);
+                    }
                 } catch (error) {
                     i18n.showErrorMessage('messages.pr.failedToFetchPRInfo', { error: String(error) });
                     console.error('fetchPRInfo error:', error);

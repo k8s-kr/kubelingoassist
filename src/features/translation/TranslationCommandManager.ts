@@ -1,10 +1,12 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
 import { TranslationUtils } from './TranslationUtils';
 import { ScrollSyncManager } from './ScrollSyncManager';
 import { StatusBarManager } from '../ui/StatusBarManager';
 import { TranslationViewProvider } from '../ui/webview-providers';
 import { GitService } from '../git';
 import { i18n } from '../i18n';
+import { PRFileChange } from '../review';
 
 /**
  * 번역 관련 명령어를 관리하는 클래스입니다.
@@ -173,9 +175,10 @@ export class TranslationCommandManager {
 
     /**
      * 리뷰 파일을 엽니다.
+     * 현재 열려있는 파일의 영문 파일이 있으면 함께 엽니다.
      */
     private async openReviewFile(): Promise<void> {
-        console.log('openReviewFileFileSelection called');
+        console.log('openReviewFile called');
 
         if (!this.gitService) {
             console.log('Git utilities not available');
@@ -190,26 +193,101 @@ export class TranslationCommandManager {
         }
 
         try {
-            const commitInfo = await this.getCommitInfoWithTranslationFiles();
-            if (!commitInfo) {
+            // 현재 열려있는 파일 가져오기
+            const currentEditor = vscode.window.activeTextEditor;
+            if (!currentEditor) {
+                i18n.showInformationMessage('messages.noActiveFile');
                 return;
             }
 
-            const selectedFile = await this.showFileSelectionDialog(commitInfo);
-            console.log('[OpenReviewFile] Selected file:', selectedFile);
+            const currentFilePath = currentEditor.document.uri.fsPath;
+            const currentFileRelativePath = vscode.workspace.asRelativePath(currentFilePath);
+            
+            // 디버깅을 위한 로그
+            console.log('[OpenReviewFile] Current file path:', currentFilePath);
+            console.log('[OpenReviewFile] Relative path:', currentFileRelativePath);
 
-            if (selectedFile) {
-                console.log('[OpenReviewFile] Opening file for review:', selectedFile.filePath);
-                await this.openFileInReviewMode(selectedFile.filePath);
-
-                if (commitInfo.prNumber) {
-                    vscode.window.showInformationMessage(`PR #${commitInfo.prNumber}`);
+            // 번역 파일인지 확인 (content/{lang}/ 패턴, en 제외)
+            // 절대 경로와 상대 경로 모두 처리
+            const isTranslationFile = (filePath: string): boolean => {
+                const path = filePath.toLowerCase();
+                // 앞에 /가 있거나 없거나 모두 매칭
+                const langMatch = path.match(/(^|\/)content\/([^/]+)\//);
+                if (langMatch) {
+                    const detectedLang = langMatch[2];
+                    return detectedLang !== 'en';
                 }
+                return false;
+            };
+
+            // 영문 파일인지 확인
+            const isEnglishFile = (filePath: string): boolean => {
+                const path = filePath.toLowerCase();
+                return path.includes('content/en/');
+            };
+
+            // 번역 파일인지 확인
+            const isTransFile = isTranslationFile(currentFileRelativePath) || isTranslationFile(currentFilePath);
+            const isEngFile = isEnglishFile(currentFileRelativePath) || isEnglishFile(currentFilePath);
+            
+            console.log('[OpenReviewFile] Is translation file:', isTransFile);
+            console.log('[OpenReviewFile] Is English file:', isEngFile);
+
+            // 영문 파일이거나 번역 파일이 아닌 경우
+            if (isEngFile || !isTransFile) {
+                i18n.showInformationMessage('messages.reviewFileNotTranslationFile');
+                return;
             }
+
+            // 원문 경로 찾기
+            const getOriginalEnglishPath = (translationPath: string): string | null => {
+                const langMatch = translationPath.match(/content\/([^/]+)\//);
+                if (langMatch && langMatch[1] !== 'en') {
+                    return translationPath.replace(`content/${langMatch[1]}/`, 'content/en/');
+                }
+                return null;
+            };
+
+            const originalEnglishPath = getOriginalEnglishPath(currentFileRelativePath);
+            if (!originalEnglishPath) {
+                i18n.showInformationMessage('messages.couldNotFindEnglishFile');
+                return;
+            }
+
+            // 영문 파일 경로 생성
+            const workspaceFolders = vscode.workspace.workspaceFolders;
+            if (!workspaceFolders || workspaceFolders.length === 0) {
+                i18n.showErrorMessage('messages.noActiveFile');
+                return;
+            }
+
+            const workspaceRoot = workspaceFolders[0].uri.fsPath;
+            const absoluteEnglishPath = `${workspaceRoot}/${originalEnglishPath}`;
+
+            // 영문 파일 존재 여부 확인
+            const fileExists = async (filePath: string): Promise<boolean> => {
+                try {
+                    await vscode.workspace.fs.stat(vscode.Uri.file(filePath));
+                    return true;
+                } catch {
+                    return false;
+                }
+            };
+
+            const englishFileExists = await fileExists(absoluteEnglishPath);
+            if (!englishFileExists) {
+                i18n.showInformationMessage('messages.englishFileNotFound', { path: originalEnglishPath });
+                return;
+            }
+
+            // Split View로 열기 (영문 파일 왼쪽, 번역 파일 오른쪽)
+            await this.openFileInReviewMode(currentFilePath);
+            i18n.showInformationMessage('messages.openedForReview', { path: currentFileRelativePath });
         } catch (error) {
-            i18n.showErrorMessage('messages.failedToGetRecentCommits', {
+            i18n.showErrorMessage('messages.failedToOpenReviewFile', {
                 error: String(error)
             });
+            console.error('openReviewFile error:', error);
         }
     }
 
@@ -287,14 +365,23 @@ export class TranslationCommandManager {
         }
 
         try {
+            const workspaceFolders = vscode.workspace.workspaceFolders;
+            const workspaceRoot = workspaceFolders?.[0]?.uri.fsPath;
+
             const originalEnglishPath = this.gitService.getOriginalEnglishPath(filePath);
             if (!originalEnglishPath) {
                 i18n.showErrorMessage('messages.couldNotDetermineOriginalPath');
                 return;
             }
 
-            await this.translationUtils.openSplitView(originalEnglishPath, filePath);
-            await this.statusBarManager?.updateAllStatusBarItems(originalEnglishPath, filePath);
+            // originalEnglishPath가 상대 경로인 경우 절대 경로로 변환
+            let absoluteEnglishPath = originalEnglishPath;
+            if (!path.isAbsolute(originalEnglishPath) && workspaceRoot) {
+                absoluteEnglishPath = path.join(workspaceRoot, originalEnglishPath);
+            }
+
+            await this.translationUtils.openSplitView(absoluteEnglishPath, filePath);
+            await this.statusBarManager?.updateAllStatusBarItems(absoluteEnglishPath, filePath);
 
             i18n.showInformationMessage('messages.openedForReview', { path: filePath });
         } catch (error) {
