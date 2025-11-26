@@ -45,8 +45,21 @@ export const en: TranslationResource = {
     failedToOpenReviewMode: 'Failed to open file in review mode: {error}',
     failedToGetRecentCommits: 'Failed to get recent commits: {error}',
     couldNotDetermineOriginalPath: 'Could not determine original English file path',
+    reviewFileNotTranslationFile: 'Current file is not a translation file. Please open a translation file (content/{language}/).',
+    couldNotFindEnglishFile: 'Could not find English original file path.',
+    englishFileNotFound: 'English original file not found: {path}',
     notKubernetesRepo: 'This extension only works with the Kubernetes documentation repository (kubernetes/website). Please open the kubernetes/website repository to use translation features.',
     kubernetesRepoOnly: 'This extension only works with the Kubernetes documentation repository (kubernetes/website). Please open the kubernetes/website repository to use review mode.',
+    pr: {
+      enterPRNumber: 'Enter PR number',
+      enterValidPRNumber: 'Please enter a valid PR number',
+      fetchingPR: 'Fetching PR #{number}...',
+      failedToFetchPR: 'Failed to fetch PR #{number}',
+      noTranslationFilesInPR: 'PR #{number}: {title}\nNo translation files found in this PR.',
+      checkingOutPR: 'Checking out PR #{number}...',
+      prFetchedSuccess: 'PR #{number}: {title}\nFound {count} translation file(s)\nAuthor: {author} | State: {state}',
+      failedToFetchPRInfo: 'Failed to fetch PR info: {error}',
+    },
   },
 
   notifications: {
@@ -149,6 +162,13 @@ export const en: TranslationResource = {
         syncOn: '🔄 Sync ON',
         syncOff: '🔄 Sync OFF',
         fetchPR: 'Fetch PR',
+      },
+      placeholder: {
+        prNumber: 'PR #',
+      },
+      accessibility: {
+        prNumberInput: 'PR number input',
+        fetchPRByNumber: 'Fetch PR by number',
       },
     },
   },

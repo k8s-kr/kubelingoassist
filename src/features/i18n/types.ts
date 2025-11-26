@@ -54,8 +54,21 @@ export interface TranslationKeys {
     failedToOpenReviewMode: string;
     failedToGetRecentCommits: string;
     couldNotDetermineOriginalPath: string;
+    reviewFileNotTranslationFile: string;
+    couldNotFindEnglishFile: string;
+    englishFileNotFound: string;
     notKubernetesRepo: string;
     kubernetesRepoOnly: string;
+    pr: {
+      enterPRNumber: string;
+      enterValidPRNumber: string;
+      fetchingPR: string;
+      failedToFetchPR: string;
+      noTranslationFilesInPR: string;
+      checkingOutPR: string;
+      prFetchedSuccess: string;
+      failedToFetchPRInfo: string;
+    };
   };
 
   // Notification messages
@@ -160,6 +173,13 @@ export interface TranslationKeys {
         syncOn: string;
         syncOff: string;
         fetchPR: string;
+      };
+      placeholder: {
+        prNumber: string;
+      };
+      accessibility: {
+        prNumberInput: string;
+        fetchPRByNumber: string;
       };
     };
   };

@@ -2,7 +2,7 @@
   "name": "kubelingoassist",
   "displayName": "KubeLingoAssist",
   "description": "쿠버네티스 문서 번역을 위한 Split View와 Synchronized Scroll 지원",
-  "version": "0.0.4",
+  "version": "0.0.6",
   "repository": {
     "type": "git",
     "url": "https://github.com/eundms/kubelingoassist.git"

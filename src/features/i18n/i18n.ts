@@ -41,14 +41,14 @@ export class I18n {
     private initializeLanguage(): SupportedLanguage {
         const vsCodeLang = (vscode.env.language ?? 'en').toLowerCase();
         const baseLang = vsCodeLang.split('-')[0];
-
+        
         let resolvedLanguage: SupportedLanguage = 'en';
 
         if (this.isSupportedLanguage(vsCodeLang)) {
             resolvedLanguage = vsCodeLang;
         } else if (this.isSupportedLanguage(baseLang)) {
             resolvedLanguage = baseLang as SupportedLanguage;
-        }
+            }
 
         console.log('[KubeLingoAssist][I18n] VS Code language:', vscode.env.language, '→ resolved:', resolvedLanguage);
         return resolvedLanguage;

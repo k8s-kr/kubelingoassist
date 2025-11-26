@@ -42,9 +42,9 @@ export const TranslationView: React.FC = () => {
     if (savedState) {
       setTranslationAppState(previousState => {
         const nextState = {
-          ...previousState,
-          isSyncScrollEnabled: typeof savedState.syncScrollEnabled === 'boolean' ? savedState.syncScrollEnabled : previousState.isSyncScrollEnabled,
-          currentMode: savedState.mode && Object.values(KUBELINGO_MODES).includes(savedState.mode) ? savedState.mode : previousState.currentMode,
+        ...previousState,
+        isSyncScrollEnabled: typeof savedState.syncScrollEnabled === 'boolean' ? savedState.syncScrollEnabled : previousState.isSyncScrollEnabled,
+        currentMode: savedState.mode && Object.values(KUBELINGO_MODES).includes(savedState.mode) ? savedState.mode : previousState.currentMode,
           language: savedState.language ?? previousState.language,
         };
         applyLanguage(nextState.language);
@@ -54,9 +54,9 @@ export const TranslationView: React.FC = () => {
       // 2) 확장에서 주입한 초기 상태
       setTranslationAppState(previousState => {
         const nextState = {
-          ...previousState,
-          isSyncScrollEnabled: typeof initialState.syncScrollEnabled === 'boolean' ? initialState.syncScrollEnabled : previousState.isSyncScrollEnabled,
-          currentMode: initialState.mode && Object.values(KUBELINGO_MODES).includes(initialState.mode) ? initialState.mode : previousState.currentMode,
+        ...previousState,
+        isSyncScrollEnabled: typeof initialState.syncScrollEnabled === 'boolean' ? initialState.syncScrollEnabled : previousState.isSyncScrollEnabled,
+        currentMode: initialState.mode && Object.values(KUBELINGO_MODES).includes(initialState.mode) ? initialState.mode : previousState.currentMode,
           language: initialState.language ?? previousState.language,
         };
         applyLanguage(nextState.language);

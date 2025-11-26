@@ -34,7 +34,7 @@ class UIi18n {
   private initializeLanguage(): void {
     const browserLang = (navigator.language ?? 'en').toLowerCase();
     const baseLang = browserLang.split('-')[0];
-
+    
     if (this.isSupportedLanguage(browserLang)) {
       this.currentLanguage = browserLang;
     } else if (this.isSupportedLanguage(baseLang)) {

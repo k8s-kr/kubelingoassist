@@ -5,6 +5,7 @@ import { TranslationCommandManager } from '../features/translation/TranslationCo
 import { ScrollSyncManager } from '../features/translation/ScrollSyncManager';
 import { LinkValidator } from '../validators/link';
 import { PRInfoService } from '../features/review/PRInfoService';
+import { i18n } from '../features/i18n';
 
 let statusBarManager: StatusBarManager;
 let linkValidator: LinkValidator;
@@ -21,12 +22,12 @@ function registerPRCommands(context: vscode.ExtensionContext) {
                 try {
                     if (!prNumber) {
                         const input = await vscode.window.showInputBox({
-                            prompt: 'Enter PR number',
+                            prompt: i18n.t('messages.pr.enterPRNumber'),
                             placeHolder: '123',
                             validateInput: (value) => {
                                 const num = parseInt(value);
                                 if (isNaN(num) || num <= 0) {
-                                    return 'Please enter a valid PR number';
+                                    return i18n.t('messages.pr.enterValidPRNumber');
                                 }
                                 return null;
                             }
@@ -40,48 +41,58 @@ function registerPRCommands(context: vscode.ExtensionContext) {
                     }
 
                     // PR 상세 정보 가져오기
-                    vscode.window.showInformationMessage(`Fetching PR #${prNumber}...`);
+                    i18n.showInformationMessage('messages.pr.fetchingPR', { number: String(prNumber) });
 
                     const prDetails = await prInfoService.getPRDetails(prNumber);
                     if (!prDetails) {
-                        vscode.window.showErrorMessage(`Failed to fetch PR #${prNumber}`);
-                        return;
-                    }
-
-                    // 번역 파일만 필터링
-                    const translationFiles = prInfoService.getReviewableFiles(prDetails.files);
-
-                    if (translationFiles.length === 0) {
-                        vscode.window.showWarningMessage(
-                            `PR #${prNumber}: ${prDetails.title}\nNo translation files found in this PR.`
-                        );
+                        i18n.showErrorMessage('messages.pr.failedToFetchPR', { number: String(prNumber) });
                         return;
                     }
 
                     // PR 브랜치로 체크아웃
-                    vscode.window.showInformationMessage(`Checking out PR #${prNumber}...`);
+                    i18n.showInformationMessage('messages.pr.checkingOutPR', { number: String(prNumber) });
                     await prInfoService.checkoutPR(prNumber, prDetails.title);
 
-                    // 첫 번째 번역 파일 열기 (원문과 함께 Split View로)
-                    const firstFile = translationFiles[0];
+                    // PR의 변경된 파일들 모두 열기
                     const workspaceFolders = vscode.workspace.workspaceFolders;
                     if (!workspaceFolders || workspaceFolders.length === 0) {
-                        vscode.window.showErrorMessage('No workspace folder found');
+                        i18n.showErrorMessage('messages.noActiveFile');
                         return;
                     }
 
-                    const translationFilePath = `${workspaceFolders[0].uri.fsPath}/${firstFile.path}`;
+                    const workspaceRoot = workspaceFolders[0].uri.fsPath;
+                    let openedCount = 0;
+                    let skippedCount = 0;
 
-                    // TranslationCommandManager의 openFileInReviewMode 사용 (기존 로직 재사용)
-                    await translationCommandManager.openFileInReviewMode(translationFilePath);
+                    // 마크다운 파일만 필터링
+                    const markdownFiles = prInfoService.filterMarkdownFiles(prDetails.files);
 
-                    vscode.window.showInformationMessage(
-                        `PR #${prNumber}: ${prDetails.title}\n` +
-                        `Found ${translationFiles.length} translation file(s)\n` +
-                        `Author: ${prDetails.author} | State: ${prDetails.state}`
-                    );
+                    // PR의 변경된 파일들 모두 열기 (영문 파일과 함께 열지 않음)
+                    for (const file of markdownFiles) {
+                        try {
+                            const filePath = `${workspaceRoot}/${file.path}`;
+                            const fileUri = vscode.Uri.file(filePath);
+                            await vscode.commands.executeCommand('vscode.open', fileUri);
+                            openedCount++;
+                        } catch (error) {
+                            console.error(`Failed to open file ${file.path}:`, error);
+                            skippedCount++;
+                        }
+                    }
+
+                    i18n.showInformationMessage('messages.pr.prFetchedSuccess', {
+                        number: String(prNumber),
+                        title: prDetails.title,
+                        count: String(openedCount),
+                        author: prDetails.author,
+                        state: prDetails.state
+                    });
+
+                    if (skippedCount > 0) {
+                        console.warn(`Skipped ${skippedCount} file(s) due to errors`);
+                    }
                 } catch (error) {
-                    vscode.window.showErrorMessage(`Failed to fetch PR info: ${error}`);
+                    i18n.showErrorMessage('messages.pr.failedToFetchPRInfo', { error: String(error) });
                     console.error('fetchPRInfo error:', error);
                 }
             }
