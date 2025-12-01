@@ -1,7 +1,7 @@
 {
   "name": "kubelingoassist",
   "displayName": "KubeLingoAssist",
-  "description": "쿠버네티스 문서 번역을 위한 Split View와 Synchronized Scroll 지원",
+  "description": "Offers features to enhance productivity in translating Kubernetes documentation",
   "version": "0.0.6",
   "publisher": "KubeLingoAssist",
   "repository": {
