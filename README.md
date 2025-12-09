@@ -5,6 +5,8 @@ It provides two core modes — **Translation Mode** and **Review Mode** — offe
 
 ## Translation Mode
 
+![화면 기록 2025-12-10 오전 1 44 29](https://github.com/user-attachments/assets/7116be68-386e-49d5-b0dd-31fd0c13903f)
+
 - First, open the English document you want to translate.
 - Click the `Open Translation File` button to load the translation file for your selected language.
   - If the translation file doesn't exist, you can create it automatically.
@@ -13,6 +15,8 @@ It provides two core modes — **Translation Mode** and **Review Mode** — offe
 - Scroll synchronization is supported for seamless comparison.
 
 ## Review Mode
+
+![화면 기록 2025-12-10 오전 1 45 50](https://github.com/user-attachments/assets/3ebc8f65-656a-406b-9ce7-1bee38324bba)
 
 - Requires `GitHub CLI (gh)` to be installed beforehand.
 - Enter a pull request number and click `Fetch PR` to load files that were changed or newly added in the PR. (Supports multiple files.)
