@@ -3,15 +3,26 @@ import { promisify } from 'util';
 
 const exec = promisify(cp.exec);
 
+const GIT_COMMAND_TIMEOUT_MS = 30000;
+
 abstract class GitCommand {
     constructor(protected workspaceRoot: string) {}
-    
+
     protected async executeCommand(command: string): Promise<string> {
         try {
-            const { stdout } = await exec(command, { cwd: this.workspaceRoot });
+            const { stdout, stderr } = await exec(command, {
+                cwd: this.workspaceRoot,
+                timeout: GIT_COMMAND_TIMEOUT_MS
+            });
+
+            if (stderr) {
+                console.warn(`Git command stderr: ${stderr}`);
+            }
+
             return stdout;
         } catch (error) {
-            throw new Error(`Git command failed: ${command}. Error: ${error}`);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            throw new Error(`Git command failed. Error: ${errorMessage}`);
         }
     }
 }

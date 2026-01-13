@@ -55,11 +55,6 @@
         "when": "false"
       },
       {
-        "command": "kubelingoassist.toggleKubelingo",
-        "title": "%commands.toggleKubelingo%",
-        "when": "false"
-      },
-      {
         "command": "kubelingoassist.changeMode",
         "title": "%commands.changeMode%",
         "when": "false"

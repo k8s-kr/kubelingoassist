@@ -13,7 +13,6 @@ export class FilePathResolver {
     }
 
     getOriginalEnglishPath(translationPath: string): string | null {
-        // 절대 경로 또는 상대 경로 모두 처리
         const langMatch = translationPath.match(/content\/([^/]+)\//);
         if (langMatch && langMatch[1] !== 'en') {
             return translationPath.replace(`content/${langMatch[1]}/`, 'content/en/');

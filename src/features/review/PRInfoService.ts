@@ -4,9 +4,6 @@ import * as vscode from 'vscode';
 
 const exec = promisify(cp.exec);
 
-/**
- * PR 기본 정보
- */
 export interface PRInfo {
     number: number;
     title: string;
@@ -20,21 +17,15 @@ export interface PRInfo {
     body?: string;
 }
 
-/**
- * PR에서 변경된 파일 정보
- */
 export interface PRFileChange {
     path: string;
     status: 'added' | 'modified' | 'removed' | 'renamed';
     additions: number;
     deletions: number;
     changes: number;
-    previousPath?: string; // renamed일 경우 이전 경로
+    previousPath?: string;
 }
 
-/**
- * PR의 커밋 정보
- */
 export interface PRCommit {
     sha: string;
     message: string;
@@ -42,9 +33,6 @@ export interface PRCommit {
     date: string;
 }
 
-/**
- * PR 상세 정보 (파일, 커밋 포함)
- */
 export interface PRDetails extends PRInfo {
     files: PRFileChange[];
     commits: PRCommit[];
@@ -56,9 +44,6 @@ export interface PRDetails extends PRInfo {
     };
 }
 
-/**
- * GitHub 사용자 정보
- */
 export interface GitHubUser {
     login: string;
     id: number;
@@ -69,9 +54,6 @@ export interface GitHubUser {
     siteAdmin: boolean;
 }
 
-/**
- * 리액션 정보
- */
 export interface Reactions {
     plusOne: number;
     minusOne: number;
@@ -85,9 +67,6 @@ export interface Reactions {
     url: string;
 }
 
-/**
- * PR 리뷰 댓글
- */
 export interface PRReviewComment {
     id: number;
     nodeId: string;
@@ -99,45 +78,25 @@ export interface PRReviewComment {
     updatedAt: string;
     diffHunk: string;
 
-    // 라인 범위 정보 (멀티라인 댓글)
     startLine: number | null;
     startSide: 'LEFT' | 'RIGHT' | null;
     originalLine?: number;
     originalStartLine: number | null;
     side: 'LEFT' | 'RIGHT';
-
-    // 커밋 정보
     commitId: string;
     originalCommitId: string;
-
-    // 위치 정보
     position: number | null;
     originalPosition: number;
-
-    // 리뷰 정보
     pullRequestReviewId: number;
     subjectType: string;
-
-    // GitHub 링크
     htmlUrl: string;
     url: string;
     pullRequestUrl: string;
-
-    // 작성자 권한
     authorAssociation: string;
-
-    // 리액션
     reactions: Reactions;
 }
 
-/**
- * PR 정보를 가져오는 서비스
- * gh CLI를 사용하여 PR 정보를 조회합니다
- */
 export class PRInfoService {
-    /**
-     * workspace 루트 경로 가져오기
-     */
     private getWorkspaceRoot(): string | undefined {
         const workspaceFolders = vscode.workspace.workspaceFolders;
         if (!workspaceFolders || workspaceFolders.length === 0) {
@@ -146,9 +105,6 @@ export class PRInfoService {
         return workspaceFolders[0].uri.fsPath;
     }
 
-    /**
-     * gh CLI가 설치되어 있는지 확인
-     */
     async isGHInstalled(): Promise<boolean> {
         try {
             await exec('gh --version');
@@ -158,9 +114,6 @@ export class PRInfoService {
         }
     }
 
-    /**
-     * gh CLI 인증 상태 확인
-     */
     async isGHAuthenticated(): Promise<boolean> {
         try {
             const cwd = this.getWorkspaceRoot();
@@ -171,9 +124,6 @@ export class PRInfoService {
         }
     }
 
-    /**
-     * 현재 저장소가 fork인지 확인하고 parent 저장소 정보 반환
-     */
     async getParentRepo(): Promise<string | null> {
         try {
             const cwd = this.getWorkspaceRoot();
@@ -190,28 +140,18 @@ export class PRInfoService {
         }
     }
 
-    /**
-     * PR을 가져올 저장소 결정 (fork인 경우 parent 저장소)
-     */
     async getTargetRepo(): Promise<string | null> {
-        // gh CLI로 fork 감지 및 parent 저장소 확인
         const parentRepo = await this.getParentRepo();
         if (parentRepo) {
             console.log(`Detected fork, using parent repo: ${parentRepo}`);
             return parentRepo;
         }
-
-        // 현재 저장소 사용 (null 반환 = --repo 옵션 없음)
         console.log('Using current repository');
         return null;
     }
 
-    /**
-     * PR 기본 정보 가져오기
-     */
     async getPRInfo(prNumber: number, targetRepo?: string): Promise<PRInfo | null> {
         try {
-            // 저장소 자동 감지
             if (!targetRepo) {
                 targetRepo = await this.getTargetRepo() || undefined;
             }
@@ -246,16 +186,12 @@ export class PRInfoService {
             console.error(`Failed to fetch PR #${prNumber}:`, error);
             console.error(`Error message:`, error.message);
             console.error(`stderr:`, error.stderr);
-            throw error; // 에러를 다시 throw해서 상위에서 처리
+            throw error;
         }
     }
 
-    /**
-     * PR에서 변경된 파일 목록 가져오기
-     */
     async getPRFiles(prNumber: number, targetRepo?: string): Promise<PRFileChange[]> {
         try {
-            // 저장소 자동 감지
             if (!targetRepo) {
                 targetRepo = await this.getTargetRepo() || undefined;
             }
@@ -287,12 +223,8 @@ export class PRInfoService {
         }
     }
 
-    /**
-     * PR의 커밋 목록 가져오기
-     */
     async getPRCommits(prNumber: number, targetRepo?: string): Promise<PRCommit[]> {
         try {
-            // 저장소 자동 감지
             if (!targetRepo) {
                 targetRepo = await this.getTargetRepo() || undefined;
             }
@@ -322,12 +254,8 @@ export class PRInfoService {
         }
     }
 
-    /**
-     * PR 상세 정보 가져오기 (파일, 커밋, 통계 모두 포함)
-     */
     async getPRDetails(prNumber: number): Promise<PRDetails | null> {
         try {
-            // 저장소를 한 번만 감지해서 재사용
             const targetRepo = await this.getTargetRepo() || undefined;
 
             const [info, files, commits] = await Promise.all([
@@ -359,15 +287,10 @@ export class PRInfoService {
         }
     }
 
-    /**
-     * 현재 브랜치의 PR 번호 가져오기
-     * fork 저장소의 경우 parent 저장소에서도 PR을 검색합니다
-     */
     async getCurrentPRNumber(): Promise<number | null> {
         try {
             const cwd = this.getWorkspaceRoot();
 
-            // 먼저 현재 저장소에서 PR 검색
             try {
                 const { stdout } = await exec('gh pr view --json number -q .number', { cwd });
                 const prNumber = parseInt(stdout.trim());
@@ -379,7 +302,6 @@ export class PRInfoService {
                 console.log('No PR found in current repository, checking parent...');
             }
 
-            // fork인 경우 parent 저장소에서 검색
             const parentRepo = await this.getParentRepo();
             if (parentRepo) {
                 try {
@@ -404,12 +326,8 @@ export class PRInfoService {
         }
     }
 
-    /**
-     * 특정 파일의 변경 내용 가져오기 (diff)
-     */
     async getFileDiff(prNumber: number, filePath: string, targetRepo?: string): Promise<string | null> {
         try {
-            // 저장소 자동 감지
             if (!targetRepo) {
                 targetRepo = await this.getTargetRepo() || undefined;
             }
@@ -427,20 +345,14 @@ export class PRInfoService {
         }
     }
 
-    /**
-     * PR 리뷰 댓글 가져오기
-     */
     async getPRComments(prNumber: number, targetRepo?: string): Promise<PRReviewComment[]> {
         try {
-            // 저장소 자동 감지
             if (!targetRepo) {
                 targetRepo = await this.getTargetRepo() || undefined;
             }
 
             const cwd = this.getWorkspaceRoot();
             const repoOption = targetRepo ? `--repo ${targetRepo}` : '';
-
-            // gh pr view로 리뷰 댓글 가져오기
             const { stdout } = await exec(
                 `gh api repos/{owner}/{repo}/pulls/${prNumber}/comments ${repoOption}`,
                 { cwd }
@@ -466,35 +378,21 @@ export class PRInfoService {
                 createdAt: comment.created_at,
                 updatedAt: comment.updated_at,
                 diffHunk: comment.diff_hunk || '',
-
-                // 라인 범위 정보
                 startLine: comment.start_line,
                 startSide: comment.start_side,
                 originalLine: comment.original_line,
                 originalStartLine: comment.original_start_line,
                 side: comment.side === 'LEFT' ? 'LEFT' : 'RIGHT',
-
-                // 커밋 정보
                 commitId: comment.commit_id,
                 originalCommitId: comment.original_commit_id,
-
-                // 위치 정보
                 position: comment.position,
                 originalPosition: comment.original_position,
-
-                // 리뷰 정보
                 pullRequestReviewId: comment.pull_request_review_id,
                 subjectType: comment.subject_type || 'line',
-
-                // GitHub 링크
                 htmlUrl: comment.html_url,
                 url: comment.url,
                 pullRequestUrl: comment.pull_request_url,
-
-                // 작성자 권한
                 authorAssociation: comment.author_association,
-
-                // 리액션
                 reactions: {
                     plusOne: comment.reactions?.['+1'] || 0,
                     minusOne: comment.reactions?.['-1'] || 0,
@@ -514,27 +412,18 @@ export class PRInfoService {
         }
     }
 
-    /**
-     * PR의 번역 파일만 필터링
-     * @param files - PR 파일 목록
-     * @param lang - 언어 코드 ('ko', 'ja' 등) 또는 'all' (모든 번역 언어 포함), 기본값은 'all'
-     */
     filterTranslationFiles(files: PRFileChange[], lang: string = 'all'): PRFileChange[] {
-        // 'all'인 경우 모든 번역 언어 포함 (en 제외)
         if (lang === 'all') {
             return files.filter(file => {
                 const path = file.path.toLowerCase();
-                // content/{lang}/ 패턴에서 en이 아닌 모든 언어 포함
                 const langMatch = path.match(/\/content\/([^/]+)\//);
                 if (langMatch) {
                     const detectedLang = langMatch[1];
-                    // 영어 파일은 제외하고, 다른 모든 언어 포함
                     return detectedLang !== 'en' && (
                         path.includes(`content/${detectedLang}/`) ||
                         path.includes(`i18n/${detectedLang}/`)
                     );
                 }
-                // i18n/{lang}/ 패턴도 확인
                 const i18nMatch = path.match(/\/i18n\/([^/]+)\//);
                 if (i18nMatch) {
                     const detectedLang = i18nMatch[1];
@@ -544,39 +433,25 @@ export class PRInfoService {
             });
         }
 
-        // 특정 언어만 필터링
         return files.filter(file => {
             const path = file.path.toLowerCase();
-            // content/ko/ 또는 /content/ko/ 패턴
             return path.includes(`content/${lang}/`) ||
                    path.includes(`i18n/${lang}/`) ||
-                   path.includes(`/${lang}/`) || // 더 넓은 범위
-                   path.match(new RegExp(`[/_]${lang}[/_]`)); // _ko_ 또는 /ko/ 패턴
+                   path.includes(`/${lang}/`) ||
+                   path.match(new RegExp(`[/_]${lang}[/_]`));
         });
     }
 
-    /**
-     * 마크다운 파일만 필터링
-     */
     filterMarkdownFiles(files: PRFileChange[]): PRFileChange[] {
         return files.filter(file => file.path.endsWith('.md'));
     }
 
-    /**
-     * PR에서 리뷰가 필요한 파일 추천
-     * (번역 파일 중 마크다운만)
-     * @param files - PR 파일 목록
-     * @param lang - 언어 코드 ('ko', 'ja' 등) 또는 'all' (모든 번역 언어 포함), 기본값은 'all'
-     */
     getReviewableFiles(files: PRFileChange[], lang: string = 'all'): PRFileChange[] {
         return this.filterMarkdownFiles(
             this.filterTranslationFiles(files, lang)
         );
     }
 
-    /**
-     * GitHub 파일 상태를 표준 상태로 변환
-     */
     private _normalizeStatus(status: string): 'added' | 'modified' | 'removed' | 'renamed' {
         const lowerStatus = status.toLowerCase();
 
@@ -585,47 +460,35 @@ export class PRInfoService {
         if (lowerStatus.includes('delet') || lowerStatus.includes('remov')) return 'removed';
         if (lowerStatus.includes('renam')) return 'renamed';
 
-        return 'modified'; // default
+        return 'modified';
     }
 
-    /**
-     * PR이 존재하는지 확인
-     */
     async prExists(prNumber: number): Promise<boolean> {
         const info = await this.getPRInfo(prNumber);
         return info !== null;
     }
 
-    /**
-     * PR 제목을 slug로 변환
-     */
     private titleToSlug(title: string): string {
         return title
             .toLowerCase()
-            .replace(/[^a-z0-9가-힣]+/g, '-') // 영문, 숫자, 한글 외 문자를 하이픈으로
-            .replace(/^-+|-+$/g, '') // 앞뒤 하이픈 제거
-            .replace(/-+/g, '-') // 연속된 하이픈을 하나로
-            .slice(0, 50); // 최대 50자로 제한
+            .replace(/[^a-z0-9가-힣]+/g, '-')
+            .replace(/^-+|-+$/g, '')
+            .replace(/-+/g, '-')
+            .slice(0, 50);
     }
 
-    /**
-     * PR 브랜치로 checkout (브랜치명: pr-<number>/<title-slug>)
-     */
     async checkoutPR(prNumber: number, prTitle: string, targetRepo?: string): Promise<void> {
         try {
             const cwd = this.getWorkspaceRoot();
 
-            // 저장소 자동 감지
             if (!targetRepo) {
                 targetRepo = await this.getTargetRepo() || undefined;
             }
 
             const titleSlug = this.titleToSlug(prTitle);
             const branchName = `pr-${prNumber}/${titleSlug}`;
-
             const repoOption = targetRepo ? `--repo ${targetRepo}` : '';
 
-            // 로컬에 브랜치가 이미 있는지 확인
             let branchExists = false;
             try {
                 await exec(`git rev-parse --verify ${branchName}`, { cwd });
@@ -635,12 +498,10 @@ export class PRInfoService {
             }
 
             if (branchExists) {
-                // 이미 있으면 checkout하고 최신 업데이트
                 console.log(`Branch ${branchName} already exists, checking out and pulling latest changes...`);
                 await exec(`git checkout ${branchName}`, { cwd });
                 await exec(`git pull`, { cwd });
             } else {
-                // 없으면 새로 생성
                 await exec(`gh pr checkout ${prNumber} ${repoOption} -b ${branchName}`, { cwd });
             }
         } catch (error) {
@@ -649,12 +510,8 @@ export class PRInfoService {
         }
     }
 
-    /**
-     * PR 목록 가져오기 (최근 N개)
-     */
     async listRecentPRs(limit: number = 10, state: 'open' | 'closed' | 'merged' | 'all' = 'all', targetRepo?: string): Promise<PRInfo[]> {
         try {
-            // 저장소 자동 감지
             if (!targetRepo) {
                 targetRepo = await this.getTargetRepo() || undefined;
             }

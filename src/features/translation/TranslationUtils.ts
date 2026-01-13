@@ -1,41 +1,32 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { i18n, LANGUAGE_NAMES, SUPPORTED_LANGUAGES, LANGUAGE_OPTIONS, LanguageInfo } from '../i18n';
+import {
+    fileExistsAsync,
+    normalizePath,
+    isKubernetesContentFile,
+    isEnglishFile as isEnglishFileUtil,
+    extractLanguageCode as extractLanguageCodeUtil,
+    getEnglishPathFromTranslation as getEnglishPathFromTranslationUtil
+} from '../../utils';
 
-/**
- * 번역 진행률 정보를 나타내는 인터페이스입니다.
- */
+const EDITOR_SCROLL_DELAY_MS = 100;
+
 export interface FileTranslationProgress {
-    /** 원본 파일의 총 라인 수 */
     originalLines: number;
-    /** 번역 파일의 총 라인 수 */
     translationLines: number;
-    /** 원본과 번역 파일의 라인 수가 동일한지 여부 */
     isEqual: boolean;
-    /** 번역 진행률 (번역 라인 수 / 원본 라인 수 * 100, 반올림) */
     percentage: number;
 }
 
-/**
- * 쿠버네티스 문서 번역을 위한 유틸리티 클래스입니다.
- * 파일 경로 변환, Split View 관리, 언어 처리 등의 기능을 제공합니다.
- */
 export class TranslationUtils {
 
-    /**
-     * 주어진 파일 경로에서 번역 파일의 경로를 생성합니다.
-     * 영어 파일의 경우 대상 언어의 번역 파일 경로를 반환하고,
-     * 번역 파일의 경우 원본 영어 파일 경로를 반환합니다.
-     * 
-     * @param filePath - 변환할 파일의 절대 경로
-     * @returns 번역 파일 경로 또는 null (변환할 수 없는 경우)
-     */
     async getTranslationPath(filePath: string): Promise<string | null> {
         if (!this.validateFilePath(filePath)) {
             return null;
         }
 
-        const normalizedPath = this.normalizePath(filePath);
+        const normalizedPath = this.normalizePathInternal(filePath);
         
         if (!this.isKubernetesContentPath(normalizedPath)) {
             console.warn('getTranslationPath: Path does not contain /content/ directory');
@@ -49,11 +40,6 @@ export class TranslationUtils {
         return this.getEnglishPathFromTranslation(normalizedPath);
     }
 
-    /**
-     * 사용자에게 번역 대상 언어를 선택하도록 하는 VS Code Quick Pick을 표시합니다.
-     * 
-     * @returns 선택된 언어 코드 또는 null (취소된 경우)
-     */
     async selectTargetLanguage(): Promise<string | null> {
         const selected = await i18n.showQuickPick(LANGUAGE_OPTIONS, {
             placeholderKey: 'ui.selectTargetLanguage',
@@ -63,12 +49,6 @@ export class TranslationUtils {
         return selected?.value || null;
     }
 
-    /**
-     * 원본 파일과 번역 파일을 Split View로 엽니다.
-     * 
-     * @param originalPath - 원본 파일의 절대 경로
-     * @param translationPath - 번역 파일의 절대 경로
-     */
     async openSplitView(originalPath: string, translationPath: string): Promise<void> {
         try {
             await this.openFilesInSplitView(originalPath, translationPath);
@@ -79,12 +59,6 @@ export class TranslationUtils {
         }
     }
 
-    /**
-     * 원본 파일을 복사하여 새로운 번역 파일을 생성합니다.
-     * 
-     * @param originalPath - 복사할 원본 파일의 절대 경로
-     * @param translationPath - 생성할 번역 파일의 절대 경로
-     */
     async createTranslationFile(originalPath: string, translationPath: string): Promise<void> {
         if (!this.validateCreateFileParams(originalPath, translationPath)) {
             return;
@@ -105,35 +79,15 @@ export class TranslationUtils {
         }
     }
 
-    /**
-     * 파일 경로에서 언어명을 추출합니다.
-     * 
-     * @param filePath - 언어를 추출할 파일의 절대 경로
-     * @returns 언어명 또는 'Unknown'
-     */
     extractLanguage(filePath: string): string {
         const langCode = this.extractLanguageCode(filePath);
         return LANGUAGE_NAMES[langCode] || langCode.toUpperCase();
     }
 
-    /**
-     * 파일 경로에서 언어 코드를 추출합니다.
-     * 
-     * @param filePath - 언어 코드를 추출할 파일의 절대 경로
-     * @returns 언어 코드 또는 'unknown'
-     */
     extractLanguageCode(filePath: string): string {
-        const langMatch = filePath.match(/\/content\/([^/]+)\//); 
-        return langMatch ? langMatch[1] : 'unknown';
+        return extractLanguageCodeUtil(filePath);
     }
 
-    /**
-     * 원본 파일과 번역 파일의 라인 수를 비교하여 번역 진행률을 계산합니다.
-     * 
-     * @param originalPath - 원본 파일의 절대 경로
-     * @param translationPath - 번역 파일의 절대 경로
-     * @returns 번역 진행률 정보 또는 null
-     */
     async compareLineCounts(originalPath: string, translationPath: string): Promise<FileTranslationProgress | null> {
         try {
             const filesExist = await this.checkBothFilesExist(originalPath, translationPath);
@@ -151,8 +105,6 @@ export class TranslationUtils {
         }
     }
 
-    // Private helper methods
-
     private validateFilePath(filePath: string): boolean {
         if (!filePath || typeof filePath !== 'string') {
             console.warn('Invalid file path provided');
@@ -161,16 +113,16 @@ export class TranslationUtils {
         return true;
     }
 
-    private normalizePath(filePath: string): string {
-        return filePath.replace(/\\\\/g, '/');
+    private normalizePathInternal(filePath: string): string {
+        return normalizePath(filePath);
     }
 
     private isKubernetesContentPath(normalizedPath: string): boolean {
-        return normalizedPath.includes('/content/');
+        return isKubernetesContentFile(normalizedPath);
     }
 
     private isEnglishFile(normalizedPath: string): boolean {
-        return normalizedPath.includes('/content/en/');
+        return isEnglishFileUtil(normalizedPath);
     }
 
     private async getTranslationPathFromEnglish(normalizedPath: string): Promise<string | null> {
@@ -184,20 +136,11 @@ export class TranslationUtils {
     }
 
     private getEnglishPathFromTranslation(normalizedPath: string): string | null {
-        const langMatch = normalizedPath.match(/\/content\/([^/]+)\//); 
-        if (langMatch && langMatch[1] !== 'en') {
-            const detectedLang = langMatch[1];
-            
-            if (!SUPPORTED_LANGUAGES.includes(detectedLang as any)) {
-                console.warn(`Unsupported language code: ${detectedLang}`);
-                return null;
-            }
-            
-            return normalizedPath.replace(`/content/${detectedLang}/`, '/content/en/');
+        const result = getEnglishPathFromTranslationUtil(normalizedPath);
+        if (!result) {
+            console.warn('Path does not match expected content structure');
         }
-        
-        console.warn('Path does not match expected content structure');
-        return null;
+        return result;
     }
 
     private async openFilesInSplitView(originalPath: string, translationPath: string): Promise<void> {
@@ -215,7 +158,7 @@ export class TranslationUtils {
                 const topPosition = new vscode.Position(0, 0);
                 editor.revealRange(new vscode.Range(topPosition, topPosition), vscode.TextEditorRevealType.AtTop);
             });
-        }, 100);
+        }, EDITOR_SCROLL_DELAY_MS);
     }
 
     private showSplitViewMessage(): void {
@@ -259,12 +202,7 @@ export class TranslationUtils {
     }
 
     private async fileExists(filePath: string): Promise<boolean> {
-        try {
-            await vscode.workspace.fs.stat(vscode.Uri.file(filePath));
-            return true;
-        } catch {
-            return false;
-        }
+        return fileExistsAsync(filePath);
     }
 
     private async confirmOverwrite(translationPath: string): Promise<boolean> {
@@ -325,7 +263,6 @@ export class TranslationUtils {
     }
 }
 
-// 기존 함수들을 유지 (하위 호환성)
 const translationUtils = new TranslationUtils();
 
 export async function getTranslationPath(filePath: string): Promise<string | null> {

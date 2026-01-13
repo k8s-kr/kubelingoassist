@@ -1,153 +1,101 @@
 import * as vscode from 'vscode';
-import * as path from 'path';
 import { TranslationUtils } from './TranslationUtils';
 import { ScrollSyncManager } from './ScrollSyncManager';
+import { TranslationStateManager } from './TranslationStateManager';
+import { ReviewModeHandler } from './ReviewModeHandler';
 import { StatusBarManager } from '../ui/StatusBarManager';
 import { TranslationViewProvider } from '../ui/webview-providers';
 import { GitService } from '../git';
 import { i18n } from '../i18n';
-import { PRFileChange } from '../review';
+import { PRInfoService } from '../review';
 
-/**
- * 번역 관련 명령어를 관리하는 클래스입니다.
- * 상태 관리, 명령어 등록, 동기화 기능 등을 제공합니다.
- */
 export class TranslationCommandManager {
-    private static readonly KEY_SYNC = 'syncScrollEnabled';
-    private static readonly KEY_KUBELINGO = 'kubelingoEnabled';
-    private static readonly KEY_MODE = 'kubelingoMode';
-
-    private isSyncScrollEnabled = false;
-    private isKubelingoEnabled = false;
-    private currentMode: 'translation' | 'review' = 'translation';
     private gitService: GitService | null = null;
-
     private statusBarManager: StatusBarManager | null = null;
     private translationViewProvider: TranslationViewProvider | null = null;
-    private prInfoService: any | null = null;
-    private context: vscode.ExtensionContext | null = null;
+    private prInfoService: PRInfoService | null = null;
+
     private translationUtils: TranslationUtils;
     private scrollSyncManager: ScrollSyncManager;
+    private stateManager: TranslationStateManager;
+    private reviewModeHandler: ReviewModeHandler;
 
     constructor() {
         this.translationUtils = new TranslationUtils();
         this.scrollSyncManager = new ScrollSyncManager();
+        this.stateManager = new TranslationStateManager();
+        this.reviewModeHandler = new ReviewModeHandler();
     }
 
-    /**
-     * 의존성을 설정합니다.
-     */
     setDependencies(
         statusBarManager: StatusBarManager,
         translationViewProvider: TranslationViewProvider,
-        prInfoService?: any
+        prInfoService?: PRInfoService
     ): void {
         this.statusBarManager = statusBarManager;
         this.translationViewProvider = translationViewProvider;
-        this.prInfoService = prInfoService;
+        this.prInfoService = prInfoService ?? null;
+        this.reviewModeHandler.setDependencies(this.gitService, this.statusBarManager);
     }
 
-    /**
-     * 저장된 상태에서 초기 상태를 로드합니다.
-     */
     initStateFromStorage(context: vscode.ExtensionContext): void {
-        this.context = context;
-        this.isSyncScrollEnabled = context.workspaceState.get<boolean>(
-            TranslationCommandManager.KEY_SYNC,
-            false
-        );
-        this.isKubelingoEnabled = context.workspaceState.get<boolean>(
-            TranslationCommandManager.KEY_KUBELINGO,
-            true
-        );
-        this.currentMode = context.workspaceState.get<'translation' | 'review'>(
-            TranslationCommandManager.KEY_MODE,
-            'translation'
-        );
-
-        // VS Code context 초기 설정 (버튼 표시 제어용)
-        vscode.commands.executeCommand('setContext', 'kubelingoassist.reviewMode', this.currentMode === 'review');
-
+        this.stateManager.initialize(context);
         this.initializeGitUtils();
+
+        vscode.commands.executeCommand(
+            'setContext',
+            'kubelingoassist.reviewMode',
+            this.stateManager.currentMode === 'review'
+        );
+
         this.syncWebviewState();
     }
 
-    /**
-     * Git 서비스를 초기화합니다.
-     */
     private initializeGitUtils(): void {
         try {
             this.gitService = new GitService();
+            this.reviewModeHandler.setDependencies(this.gitService, this.statusBarManager);
         } catch (error) {
             console.error('Failed to initialize GitService:', error);
         }
     }
 
-    /**
-     * 웹뷰 상태를 동기화합니다.
-     */
     private syncWebviewState(): void {
         this.translationViewProvider?.broadcastState({
-            syncScrollEnabled: this.isSyncScrollEnabled,
-            kubelingoEnabled: this.isKubelingoEnabled,
-            mode: this.currentMode,
+            syncScrollEnabled: this.stateManager.isSyncScrollEnabled,
+            mode: this.stateManager.currentMode,
         });
     }
 
-    /**
-     * 현재 상태를 반환합니다.
-     */
     getState(): {
         isSyncScrollEnabled: boolean;
-        isKubelingoEnabled: boolean;
         currentMode: 'translation' | 'review';
     } {
-        return {
-            isSyncScrollEnabled: this.isSyncScrollEnabled,
-            isKubelingoEnabled: this.isKubelingoEnabled,
-            currentMode: this.currentMode,
-        };
+        return this.stateManager.getState();
     }
 
-    /**
-     * VS Code 명령어를 등록합니다.
-     */
     registerCommands(context: vscode.ExtensionContext): void {
-        this.context = context;
-
         context.subscriptions.push(
             vscode.commands.registerCommand(
-                'kubelingoassist.openTranslationFile', 
+                'kubelingoassist.openTranslationFile',
                 (uri?: vscode.Uri) => this.openTranslationFile(uri)
             ),
             vscode.commands.registerCommand(
-                'kubelingoassist.openReviewFile', 
-                () => this.openReviewFile()
+                'kubelingoassist.openReviewFile',
+                () => this.reviewModeHandler.openReviewFile()
             ),
             vscode.commands.registerCommand(
-                'kubelingoassist.toggleSyncScroll', 
+                'kubelingoassist.toggleSyncScroll',
                 () => this.toggleSyncScroll()
             ),
             vscode.commands.registerCommand(
-                'kubelingoassist.toggleKubelingo', 
-                () => this.toggleKubelingo()
-            ),
-            vscode.commands.registerCommand(
-                'kubelingoassist.changeMode', 
+                'kubelingoassist.changeMode',
                 (mode: 'translation' | 'review') => this.changeMode(mode)
             )
         );
     }
 
-    /**
-     * 번역 파일을 열고 분할 화면을 설정합니다.
-     */
     private async openTranslationFile(uri?: vscode.Uri): Promise<void> {
-        if (!this.isKubelingoEnabled) {
-            i18n.showInformationMessage('messages.kubelingoDisabled');
-            return;
-        }
-
         if (this.gitService) {
             const isK8sRepo = await this.gitService.isKubernetesWebsiteRepository();
             if (!isK8sRepo) {
@@ -173,136 +121,10 @@ export class TranslationCommandManager {
         this.syncWebviewState();
     }
 
-    /**
-     * 리뷰 파일을 엽니다.
-     * 현재 열려있는 파일의 영문 파일이 있으면 함께 엽니다.
-     */
-    private async openReviewFile(): Promise<void> {
-        console.log('openReviewFile called');
-
-        if (!this.gitService) {
-            console.log('Git utilities not available');
-            i18n.showErrorMessage('messages.gitUtilitiesNotAvailable');
-            return;
-        }
-
-        const isK8sRepo = await this.gitService.isKubernetesWebsiteRepository();
-        if (!isK8sRepo) {
-            i18n.showErrorMessage('messages.kubernetesRepoOnly');
-            return;
-        }
-
-        try {
-            // 현재 열려있는 파일 가져오기
-            const currentEditor = vscode.window.activeTextEditor;
-            if (!currentEditor) {
-                i18n.showInformationMessage('messages.noActiveFile');
-                return;
-            }
-
-            const currentFilePath = currentEditor.document.uri.fsPath;
-            const currentFileRelativePath = vscode.workspace.asRelativePath(currentFilePath);
-            
-            // 디버깅을 위한 로그
-            console.log('[OpenReviewFile] Current file path:', currentFilePath);
-            console.log('[OpenReviewFile] Relative path:', currentFileRelativePath);
-
-            // 번역 파일인지 확인 (content/{lang}/ 패턴, en 제외)
-            // 절대 경로와 상대 경로 모두 처리
-            const isTranslationFile = (filePath: string): boolean => {
-                const path = filePath.toLowerCase();
-                // 앞에 /가 있거나 없거나 모두 매칭
-                const langMatch = path.match(/(^|\/)content\/([^/]+)\//);
-                if (langMatch) {
-                    const detectedLang = langMatch[2];
-                    return detectedLang !== 'en';
-                }
-                return false;
-            };
-
-            // 영문 파일인지 확인
-            const isEnglishFile = (filePath: string): boolean => {
-                const path = filePath.toLowerCase();
-                return path.includes('content/en/');
-            };
-
-            // 번역 파일인지 확인
-            const isTransFile = isTranslationFile(currentFileRelativePath) || isTranslationFile(currentFilePath);
-            const isEngFile = isEnglishFile(currentFileRelativePath) || isEnglishFile(currentFilePath);
-            
-            console.log('[OpenReviewFile] Is translation file:', isTransFile);
-            console.log('[OpenReviewFile] Is English file:', isEngFile);
-
-            // 영문 파일이거나 번역 파일이 아닌 경우
-            if (isEngFile || !isTransFile) {
-                i18n.showInformationMessage('messages.reviewFileNotTranslationFile');
-                return;
-            }
-
-            // 원문 경로 찾기
-            const getOriginalEnglishPath = (translationPath: string): string | null => {
-                const langMatch = translationPath.match(/content\/([^/]+)\//);
-                if (langMatch && langMatch[1] !== 'en') {
-                    return translationPath.replace(`content/${langMatch[1]}/`, 'content/en/');
-                }
-                return null;
-            };
-
-            const originalEnglishPath = getOriginalEnglishPath(currentFileRelativePath);
-            if (!originalEnglishPath) {
-                i18n.showInformationMessage('messages.couldNotFindEnglishFile');
-                return;
-            }
-
-            // 영문 파일 경로 생성
-            const workspaceFolders = vscode.workspace.workspaceFolders;
-            if (!workspaceFolders || workspaceFolders.length === 0) {
-                i18n.showErrorMessage('messages.noActiveFile');
-                return;
-            }
-
-            const workspaceRoot = workspaceFolders[0].uri.fsPath;
-            const absoluteEnglishPath = `${workspaceRoot}/${originalEnglishPath}`;
-
-            // 영문 파일 존재 여부 확인
-            const fileExists = async (filePath: string): Promise<boolean> => {
-                try {
-                    await vscode.workspace.fs.stat(vscode.Uri.file(filePath));
-                    return true;
-                } catch {
-                    return false;
-                }
-            };
-
-            const englishFileExists = await fileExists(absoluteEnglishPath);
-            if (!englishFileExists) {
-                i18n.showInformationMessage('messages.englishFileNotFound', { path: originalEnglishPath });
-                return;
-            }
-
-            // Split View로 열기 (영문 파일 왼쪽, 번역 파일 오른쪽)
-            await this.openFileInReviewMode(currentFilePath);
-            i18n.showInformationMessage('messages.openedForReview', { path: currentFileRelativePath });
-        } catch (error) {
-            i18n.showErrorMessage('messages.failedToOpenReviewFile', {
-                error: String(error)
-            });
-            console.error('openReviewFile error:', error);
-        }
-    }
-
-    /**
-     * 스크롤 동기화를 토글합니다.
-     */
     private toggleSyncScroll(): void {
-        if (!this.isKubelingoEnabled) {
-            i18n.showInformationMessage('messages.kubelingoDisabled');
-            return;
-        }
+        const isEnabled = this.stateManager.toggleSyncScroll();
 
-        this.isSyncScrollEnabled = !this.isSyncScrollEnabled;
-
-        if (this.isSyncScrollEnabled) {
+        if (isEnabled) {
             this.scrollSyncManager.setupSynchronizedScrolling();
             i18n.showInformationMessage('messages.syncScrollEnabled');
         } else {
@@ -310,40 +132,11 @@ export class TranslationCommandManager {
             i18n.showInformationMessage('messages.syncScrollDisabled');
         }
 
-        this.saveStateAndBroadcast();
-    }
-
-    /**
-     * Kubelingo 기능을 토글합니다.
-     */
-    private toggleKubelingo(): void {
-        console.log('toggleKubelingo function called, current state:', this.isKubelingoEnabled);
-        this.isKubelingoEnabled = !this.isKubelingoEnabled;
-        console.log('toggleKubelingo new state:', this.isKubelingoEnabled);
-
-        if (this.isKubelingoEnabled) {
-            i18n.showInformationMessage('messages.kubelingoEnabled');
-        } else {
-            i18n.showInformationMessage('messages.kubelingoDisabledMsg');
-            this.disableSyncScrollWhenKubelingoDisabled();
-        }
-
-        this.saveKubelingoState();
         this.syncWebviewState();
     }
 
-    /**
-     * 모드를 변경합니다.
-     */
     private async changeMode(mode: 'translation' | 'review'): Promise<void> {
-        if (!this.isKubelingoEnabled) {
-            i18n.showInformationMessage('messages.kubelingoDisabled');
-            return;
-        }
-
-        this.currentMode = mode;
-
-        // VS Code context 설정 (버튼 표시 제어용)
+        this.stateManager.currentMode = mode;
         vscode.commands.executeCommand('setContext', 'kubelingoassist.reviewMode', mode === 'review');
 
         const messageKey = mode === 'review'
@@ -351,146 +144,22 @@ export class TranslationCommandManager {
             : 'messages.translationModeEnabled';
         i18n.showInformationMessage(messageKey);
 
-        this.saveModeState();
         this.syncWebviewState();
     }
 
-    /**
-     * 리뷰 모드에서 파일을 엽니다.
-     */
     async openFileInReviewMode(filePath: string): Promise<void> {
-        if (!this.gitService) {
-            i18n.showErrorMessage('messages.gitUtilitiesNotAvailable');
-            return;
-        }
-
-        try {
-            const workspaceFolders = vscode.workspace.workspaceFolders;
-            const workspaceRoot = workspaceFolders?.[0]?.uri.fsPath;
-
-            const originalEnglishPath = this.gitService.getOriginalEnglishPath(filePath);
-            if (!originalEnglishPath) {
-                i18n.showErrorMessage('messages.couldNotDetermineOriginalPath');
-                return;
-            }
-
-            // originalEnglishPath가 상대 경로인 경우 절대 경로로 변환
-            let absoluteEnglishPath = originalEnglishPath;
-            if (!path.isAbsolute(originalEnglishPath) && workspaceRoot) {
-                absoluteEnglishPath = path.join(workspaceRoot, originalEnglishPath);
-            }
-
-            await this.translationUtils.openSplitView(absoluteEnglishPath, filePath);
-            await this.statusBarManager?.updateAllStatusBarItems(absoluteEnglishPath, filePath);
-
-            i18n.showInformationMessage('messages.openedForReview', { path: filePath });
-        } catch (error) {
-            i18n.showErrorMessage('messages.failedToOpenReviewMode', { 
-                error: String(error) 
-            });
-        }
+        await this.reviewModeHandler.openFileInReviewMode(filePath);
     }
-
-    // Private helper methods
 
     private getFilePath(uri?: vscode.Uri): string | undefined {
         if (uri) {
             return uri.fsPath;
         }
-        
+
         const currentEditor = vscode.window.activeTextEditor;
         return currentEditor?.document.uri.fsPath;
     }
 
-    private async getCommitInfoWithTranslationFiles() {
-        console.log('Getting recent commit info...');
-        const commitInfo = await this.gitService!.getRecentCommit();
-        console.log('Commit info:', commitInfo);
-
-        if (!commitInfo) {
-            console.log('No recent commits found');
-            i18n.showErrorMessage('messages.noRecentCommits');
-            return null;
-        }
-
-        console.log('All files in commit:', commitInfo.files.map(f => f.path));
-        const translationFiles = this.gitService!.filterTranslationFiles(commitInfo.files);
-        console.log('Filtered translation files:', translationFiles.map(f => f.path));
-
-        if (translationFiles.length === 0) {
-            console.log('No translation files found after filtering');
-            i18n.showErrorMessage('messages.noTranslationFilesFound');
-            return null;
-        }
-
-        // PR 번호 가져오기
-        let prNumber: number | null = null;
-        if (this.prInfoService) {
-            try {
-                prNumber = await this.prInfoService.getCurrentPRNumber();
-                console.log('[OpenReviewFile] Detected PR number:', prNumber);
-            } catch (error) {
-                console.warn('[OpenReviewFile] Could not detect PR number:', error);
-            }
-        }
-
-        return { ...commitInfo, files: translationFiles, prNumber };
-    }
-
-    private async showFileSelectionDialog(commitInfo: any) {
-        const quickPickItems = await Promise.all(
-            commitInfo.files.map(async (file: any) => ({
-                label: vscode.workspace.asRelativePath(file.absPath, false),
-                description: this.getFileStatusDescription(file.status),
-                detail: i18n.t('ui.fromCommit', { message: commitInfo.message }),
-                filePath: file.absPath
-            }))
-        );
-
-        return await i18n.showQuickPick(quickPickItems, {
-            placeholderKey: 'ui.selectFileToReview',
-            matchOnDescription: true,
-            matchOnDetail: true
-        });
-    }
-
-    private getFileStatusDescription(status: string): string {
-        switch (status) {
-            case 'M': return i18n.t('ui.fileStatus.modified');
-            case 'A': return i18n.t('ui.fileStatus.added');
-            default: return i18n.t('ui.fileStatus.other');
-        }
-    }
-
-    private disableSyncScrollWhenKubelingoDisabled(): void {
-        if (this.isSyncScrollEnabled) {
-            this.isSyncScrollEnabled = false;
-            this.scrollSyncManager.cleanupScrollListeners();
-            this.context?.workspaceState.update(TranslationCommandManager.KEY_SYNC, this.isSyncScrollEnabled);
-        }
-    }
-
-    private saveStateAndBroadcast(): void {
-        this.context?.workspaceState.update(TranslationCommandManager.KEY_SYNC, this.isSyncScrollEnabled);
-        this.syncWebviewState();
-    }
-
-    private saveKubelingoState(): void {
-        this.context?.workspaceState.update(TranslationCommandManager.KEY_KUBELINGO, this.isKubelingoEnabled);
-        console.log('Broadcasting state to webview:', {
-            syncScrollEnabled: this.isSyncScrollEnabled,
-            kubelingoEnabled: this.isKubelingoEnabled,
-            mode: this.currentMode
-        });
-    }
-
-    private saveModeState(): void {
-        this.context?.workspaceState.update(TranslationCommandManager.KEY_MODE, this.currentMode);
-    }
-
-    /**
-     * 리소스 정리를 위한 dispose 메서드
-     */
     dispose(): void {
         this.scrollSyncManager.cleanupScrollListeners();
     }

@@ -1,6 +1,5 @@
 export interface TranslationState {
   isSyncScrollEnabled: boolean;
-  isKubelingoEnabled: boolean;
   currentMode: 'translation' | 'review';
 }
 
@@ -35,7 +34,6 @@ export interface TranslationProgress {
   completionPercentage: number;
 }
 
-// Review Comment Types
 export enum CommentType {
   GENERAL = 'general',
   SUGGESTION = 'suggestion',
@@ -82,52 +80,32 @@ export interface ReviewComment {
   lineNumber: number;
   createdAt: Date;
   resolved: boolean;
-  outdated: boolean; // 댓글이 작성된 코드가 변경되어 더 이상 최신 상태가 아님
+  outdated: boolean;
   suggestion?: ReviewCommentSuggestion;
   replies: ReviewComment[];
   prCommentId?: number;
-
-  // Pending 상태 (로컬에서 작성했지만 아직 GitHub에 제출되지 않음)
   isPending: boolean;
-  isLocalOnly: boolean; // GitHub에서 가져온 게 아닌 로컬 작성 댓글
-
-  // GitHub 상세 정보 (선택적)
+  isLocalOnly: boolean;
   nodeId?: string;
   updatedAt?: Date;
   diffHunk?: string;
-
-  // 라인 범위 정보 (멀티라인 댓글)
   startLine?: number | null;
   startSide?: 'LEFT' | 'RIGHT' | null;
   originalLine?: number;
   originalStartLine?: number | null;
   side?: 'LEFT' | 'RIGHT';
-
-  // 커밋 정보
   commitId?: string;
   originalCommitId?: string;
-
-  // 위치 정보
   position?: number | null;
   originalPosition?: number;
-
-  // 리뷰 정보
   pullRequestReviewId?: number;
   subjectType?: string;
-
-  // GitHub 링크
   htmlUrl?: string;
   url?: string;
   pullRequestUrl?: string;
-
-  // 작성자 상세 정보
   userInfo?: GitHubUserInfo;
   authorAssociation?: string;
-
-  // 리액션
   reactions?: CommentReactions;
-
-  // 사용자의 리액션 상태 (로컬 전용, on/off 토글 추적)
   userReactions?: Set<string>;
 }
 
@@ -138,7 +116,6 @@ export interface CommentStorage {
   };
 }
 
-// Pending Review 관리
 export interface PendingReview {
   prNumber: number;
   comments: ReviewComment[];
@@ -153,7 +130,6 @@ export interface PendingReviewStorage {
   };
 }
 
-// PR Information Types
 export interface PRInfo {
   number: number;
   title: string;

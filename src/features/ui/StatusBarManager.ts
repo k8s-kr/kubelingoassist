@@ -3,6 +3,8 @@ import * as vscode from 'vscode';
 import { TranslationUtils } from '../translation/TranslationUtils';
 import { i18n } from '../i18n';
 
+const STATUS_BAR_PRIORITY = 99;
+
 export class StatusBarManager {
   private languageStatusBarItem: vscode.StatusBarItem;
   private currentOriginalPath?: string;
@@ -11,7 +13,7 @@ export class StatusBarManager {
   private translationUtils = new TranslationUtils();
 
   constructor() {
-    this.languageStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 99);
+    this.languageStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, STATUS_BAR_PRIORITY);
     this.languageStatusBarItem.command = 'kubelingoassist.openTranslationFile';
     this.languageStatusBarItem.text = `$(globe) ${i18n.t('ui.statusBar.translationFile')}`;
     this.languageStatusBarItem.tooltip = i18n.t('ui.statusBar.openTranslationFile');
