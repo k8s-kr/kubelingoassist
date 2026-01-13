@@ -1,1 +1,1 @@
-export { NotificationManager, notificationManager, NotificationType } from './NotificationManager';
+export { NotificationManager, getNotificationManager, NotificationType } from './NotificationManager';

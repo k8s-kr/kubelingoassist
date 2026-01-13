@@ -1,42 +1,29 @@
 import * as vscode from 'vscode';
-import { i18n } from '../i18n';
+import { I18n } from '../i18n/i18n';
 
 export type NotificationType = 'info' | 'warning' | 'error' | 'success';
 
 export class NotificationManager {
-    private static instance: NotificationManager;
+    private i18n: I18n;
 
-    private constructor() {}
-
-    public static getInstance(): NotificationManager {
-        if (!NotificationManager.instance) {
-            NotificationManager.instance = new NotificationManager();
-        }
-        return NotificationManager.instance;
-    }
-
-    public static resetInstance(): void {
-        NotificationManager.instance = undefined as unknown as NotificationManager;
-    }
-
-    public static setInstance(instance: NotificationManager): void {
-        NotificationManager.instance = instance;
+    public constructor(i18n: I18n) {
+        this.i18n = i18n;
     }
 
     public showInfo(key: string, params?: Record<string, string>, ...items: string[]): Thenable<string | undefined> {
-        return i18n.showInformationMessage(key, params, ...items);
+        return this.i18n.showInformationMessage(key, params, ...items);
     }
 
     public showWarning(key: string, params?: Record<string, string>, ...items: string[]): Thenable<string | undefined> {
-        return i18n.showWarningMessage(key, params, ...items);
+        return this.i18n.showWarningMessage(key, params, ...items);
     }
 
     public showError(key: string, params?: Record<string, string>, ...items: string[]): Thenable<string | undefined> {
-        return i18n.showErrorMessage(key, params, ...items);
+        return this.i18n.showErrorMessage(key, params, ...items);
     }
 
     public showSuccess(key: string, params?: Record<string, string>, ...items: string[]): Thenable<string | undefined> {
-        return i18n.showInformationMessage(key, params, ...items);
+        return this.i18n.showInformationMessage(key, params, ...items);
     }
 
     public show(type: NotificationType, key: string, params?: Record<string, string>, ...items: string[]): Thenable<string | undefined> {
@@ -83,4 +70,8 @@ export class NotificationManager {
     }
 }
 
-export const notificationManager = NotificationManager.getInstance();
+import { container } from '../../core/ServiceContainer';
+
+export function getNotificationManager(): NotificationManager {
+    return container.getNotificationManager();
+}

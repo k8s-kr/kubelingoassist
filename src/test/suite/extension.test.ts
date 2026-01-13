@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { i18n } from '../../features/i18n';
+import { getI18n } from '../../features/i18n';
 
 // Import all separated test suites
 import './translation-utils.test';
@@ -10,7 +10,7 @@ import './integration.test';
 import './edge-cases.test';
 
 suite('KubeLingoAssist Extension Test Suite', () => {
-    vscode.window.showInformationMessage(i18n.t('ui.test.startingTests'));
+    vscode.window.showInformationMessage(getI18n().t('ui.test.startingTests'));
     
     // All individual test suites are automatically loaded via imports above
     // This main test suite serves as the entry point and orchestrator

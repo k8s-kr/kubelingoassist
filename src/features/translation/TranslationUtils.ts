@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { i18n, LANGUAGE_NAMES, SUPPORTED_LANGUAGES, LANGUAGE_OPTIONS, LanguageInfo } from '../i18n';
+import { getI18n, LANGUAGE_NAMES, SUPPORTED_LANGUAGES, LANGUAGE_OPTIONS, LanguageInfo } from '../i18n';
 import {
     fileExistsAsync,
     normalizePath,
@@ -41,7 +41,7 @@ export class TranslationUtils {
     }
 
     async selectTargetLanguage(): Promise<string | null> {
-        const selected = await i18n.showQuickPick(LANGUAGE_OPTIONS, {
+        const selected = await getI18n().showQuickPick(LANGUAGE_OPTIONS, {
             placeholderKey: 'ui.selectTargetLanguage',
             matchOnDescription: true
         });
@@ -73,7 +73,7 @@ export class TranslationUtils {
             await this.createFileAndDirectory(translationPath);
             await this.openSplitView(originalPath, translationPath);
             
-            i18n.showInformationMessage('messages.fileCopied');
+            getI18n().showInformationMessage('messages.fileCopied');
         } catch (error) {
             this.handleFileCreationError(error);
         }
@@ -162,25 +162,25 @@ export class TranslationUtils {
     }
 
     private showSplitViewMessage(): void {
-        i18n.showInformationMessage('messages.splitViewOpened');
+        getI18n().showInformationMessage('messages.splitViewOpened');
     }
 
     private async handleSplitViewError(originalPath: string, translationPath: string): Promise<void> {
-        const createFile = await i18n.showWarningMessage(
+        const createFile = await getI18n().showWarningMessage(
             'messages.translationFileNotExists',
             undefined,
-            i18n.t('common.create'),
-            i18n.t('common.cancel')
+            getI18n().t('common.create'),
+            getI18n().t('common.cancel')
         );
         
-        if (createFile === i18n.t('common.create')) {
+        if (createFile === getI18n().t('common.create')) {
             await this.createTranslationFile(originalPath, translationPath);
         }
     }
 
     private validateCreateFileParams(originalPath: string, translationPath: string): boolean {
         if (!originalPath || !translationPath) {
-            i18n.showErrorMessage('messages.invalidFilePath');
+            getI18n().showErrorMessage('messages.invalidFilePath');
             return false;
         }
         return true;
@@ -189,7 +189,7 @@ export class TranslationUtils {
     private async checkFileCreationPreconditions(originalPath: string, translationPath: string): Promise<boolean> {
         const originalExists = await this.fileExists(originalPath);
         if (!originalExists) {
-            i18n.showErrorMessage('messages.originalFileNotFound', { path: originalPath });
+            getI18n().showErrorMessage('messages.originalFileNotFound', { path: originalPath });
             return false;
         }
         
@@ -206,14 +206,14 @@ export class TranslationUtils {
     }
 
     private async confirmOverwrite(translationPath: string): Promise<boolean> {
-        const overwrite = await i18n.showWarningMessage(
+        const overwrite = await getI18n().showWarningMessage(
             'messages.fileAlreadyExists',
             { filename: path.basename(translationPath) },
-            i18n.t('common.overwrite'),
-            i18n.t('common.cancel')
+            getI18n().t('common.overwrite'),
+            getI18n().t('common.cancel')
         );
         
-        return overwrite === i18n.t('common.overwrite');
+        return overwrite === getI18n().t('common.overwrite');
     }
 
     private async createFileAndDirectory(translationPath: string): Promise<void> {
@@ -229,7 +229,7 @@ export class TranslationUtils {
     private handleFileCreationError(error: unknown): void {
         const errorMessage = error instanceof Error ? error.message : String(error);
         console.error('createTranslationFile error:', error);
-        i18n.showErrorMessage('messages.fileCopyFailed', { error: errorMessage });
+        getI18n().showErrorMessage('messages.fileCopyFailed', { error: errorMessage });
     }
 
     private async checkBothFilesExist(originalPath: string, translationPath: string): Promise<boolean> {

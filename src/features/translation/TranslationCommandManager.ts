@@ -6,7 +6,7 @@ import { ReviewModeHandler } from './ReviewModeHandler';
 import { StatusBarManager } from '../ui/StatusBarManager';
 import { TranslationViewProvider } from '../ui/webview-providers';
 import { GitService } from '../git';
-import { i18n } from '../i18n';
+import { getI18n } from '../i18n';
 import { PRInfoService } from '../review';
 
 export class TranslationCommandManager {
@@ -99,20 +99,20 @@ export class TranslationCommandManager {
         if (this.gitService) {
             const isK8sRepo = await this.gitService.isKubernetesWebsiteRepository();
             if (!isK8sRepo) {
-                i18n.showErrorMessage('messages.notKubernetesRepo');
+                getI18n().showErrorMessage('messages.notKubernetesRepo');
                 return;
             }
         }
 
         const filePath = this.getFilePath(uri);
         if (!filePath) {
-            i18n.showErrorMessage('messages.noActiveFile');
+            getI18n().showErrorMessage('messages.noActiveFile');
             return;
         }
 
         const translationPath = await this.translationUtils.getTranslationPath(filePath);
         if (!translationPath) {
-            i18n.showErrorMessage('messages.cannotFindTranslationPath');
+            getI18n().showErrorMessage('messages.cannotFindTranslationPath');
             return;
         }
 
@@ -126,10 +126,10 @@ export class TranslationCommandManager {
 
         if (isEnabled) {
             this.scrollSyncManager.setupSynchronizedScrolling();
-            i18n.showInformationMessage('messages.syncScrollEnabled');
+            getI18n().showInformationMessage('messages.syncScrollEnabled');
         } else {
             this.scrollSyncManager.cleanupScrollListeners();
-            i18n.showInformationMessage('messages.syncScrollDisabled');
+            getI18n().showInformationMessage('messages.syncScrollDisabled');
         }
 
         this.syncWebviewState();
@@ -142,7 +142,7 @@ export class TranslationCommandManager {
         const messageKey = mode === 'review'
             ? 'messages.reviewModeEnabled'
             : 'messages.translationModeEnabled';
-        i18n.showInformationMessage(messageKey);
+        getI18n().showInformationMessage(messageKey);
 
         this.syncWebviewState();
     }

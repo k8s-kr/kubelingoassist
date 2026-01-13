@@ -5,7 +5,6 @@ import { ko } from './resources/ko';
 import { ja } from './resources/ja';
 
 export class I18n {
-    private static instance: I18n;
     private currentLanguage: SupportedLanguage;
     private resources: Record<SupportedLanguage, TranslationResource> = {
         'en': en,
@@ -18,23 +17,8 @@ export class I18n {
         'es': en,    // TODO: Add Spanish
     };
 
-    private constructor() {
+    public constructor() {
         this.currentLanguage = this.initializeLanguage();
-    }
-
-    public static getInstance(): I18n {
-        if (!I18n.instance) {
-            I18n.instance = new I18n();
-        }
-        return I18n.instance;
-    }
-
-    public static resetInstance(): void {
-        I18n.instance = undefined as unknown as I18n;
-    }
-
-    public static setInstance(instance: I18n): void {
-        I18n.instance = instance;
     }
 
     private initializeLanguage(): SupportedLanguage {
@@ -111,4 +95,8 @@ export class I18n {
     }
 }
 
-export const i18n = I18n.getInstance();
+import { container } from '../../core/ServiceContainer';
+
+export function getI18n(): I18n {
+    return container.getI18n();
+}

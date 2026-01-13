@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
-import { notificationManager } from '../notifications';
-import { i18n, SupportedLanguage } from '../i18n';
+import { getNotificationManager } from '../notifications';
+import { getI18n, SupportedLanguage } from '../i18n';
 
 interface WebviewMessage {
   type: string;
@@ -59,7 +59,7 @@ export class TranslationViewProvider implements vscode.WebviewViewProvider {
   private state: WebviewState = {
     syncScrollEnabled: false,
     mode: 'translation',
-    language: i18n.getCurrentLanguage(),
+    language: getI18n().getCurrentLanguage(),
   };
 
   constructor(private readonly _extensionUri: vscode.Uri) {}
@@ -157,7 +157,7 @@ export class TranslationViewProvider implements vscode.WebviewViewProvider {
         pushCommentsToGitHub: () => this._executeCommand(WEBVIEW_CONFIG.COMMANDS.PUSH_COMMENTS_TO_GITHUB, msg.reviewEvent),
         aiChat: () => {
           const message = msg?.payload?.message ?? '';
-          notificationManager.showInfo('notifications.info.aiChatMessage', { message });
+          getNotificationManager().showInfo('notifications.info.aiChatMessage', { message });
         },
       };
 
@@ -169,7 +169,7 @@ export class TranslationViewProvider implements vscode.WebviewViewProvider {
       }
     } catch (error) {
       console.error('Error handling webview message:', error);
-      notificationManager.showError('notifications.error.webviewMessageProcessingError', { error: String(error) });
+      getNotificationManager().showError('notifications.error.webviewMessageProcessingError', { error: String(error) });
     }
   }
 

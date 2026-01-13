@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { notificationManager } from '../notifications';
+import { getNotificationManager } from '../notifications';
 import { isKubernetesContentFile } from '../../utils';
 
 const SCROLL_DEBOUNCE_MS = 20;
@@ -107,7 +107,7 @@ export class ScrollSyncManager {
         const translationEditors = this.getTranslationEditors();
 
         if (translationEditors.length < 2) {
-            notificationManager.showWarning('notifications.warning.insufficientTranslationFiles');
+            getNotificationManager().showWarning('notifications.warning.insufficientTranslationFiles');
         }
     }
 

@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { i18n } from '../features/i18n';
+import { getI18n } from '../features/i18n';
 
 export enum ErrorType {
     GIT = 'git',
@@ -50,7 +50,7 @@ export class ErrorHandler {
                 type: ErrorType.GIT,
                 severity: ErrorSeverity.ERROR,
                 message: originalError.message,
-                userMessage: i18n.t('errors.gitOperationFailed') || 'Git operation failed.',
+                userMessage: getI18n().t('errors.gitOperationFailed') || 'Git operation failed.',
                 originalError,
                 context: { operation: context }
             };
@@ -61,7 +61,7 @@ export class ErrorHandler {
                 type: ErrorType.FILE_SYSTEM,
                 severity: ErrorSeverity.ERROR,
                 message: originalError.message,
-                userMessage: i18n.t('errors.fileOperationFailed') || 'File operation failed.',
+                userMessage: getI18n().t('errors.fileOperationFailed') || 'File operation failed.',
                 originalError,
                 context: { operation: context }
             };
@@ -72,7 +72,7 @@ export class ErrorHandler {
                 type: ErrorType.NETWORK,
                 severity: ErrorSeverity.ERROR,
                 message: originalError.message,
-                userMessage: i18n.t('errors.networkError') || 'Network error occurred.',
+                userMessage: getI18n().t('errors.networkError') || 'Network error occurred.',
                 originalError,
                 context: { operation: context }
             };
@@ -82,7 +82,7 @@ export class ErrorHandler {
             type: ErrorType.UNKNOWN,
             severity: ErrorSeverity.ERROR,
             message: originalError.message,
-            userMessage: i18n.t('errors.unexpectedError') || 'An unexpected error occurred.',
+            userMessage: getI18n().t('errors.unexpectedError') || 'An unexpected error occurred.',
             originalError,
             context: { operation: context }
         };
@@ -110,7 +110,7 @@ Stack: ${errorInfo.originalError?.stack || 'N/A'}
     }
 
     static showUserMessage(errorInfo: ErrorInfo): void {
-        const showDetails = i18n.t('common.showDetails') || 'Show Details';
+        const showDetails = getI18n().t('common.showDetails') || 'Show Details';
 
         switch (errorInfo.severity) {
             case ErrorSeverity.INFO:

@@ -5,7 +5,7 @@ import { TranslationCommandManager } from '../features/translation/TranslationCo
 import { ScrollSyncManager } from '../features/translation/ScrollSyncManager';
 import { LinkValidator } from '../validators/link';
 import { PRInfoService } from '../features/review/PRInfoService';
-import { i18n } from '../features/i18n';
+import { container } from './ServiceContainer';
 
 let statusBarManager: StatusBarManager;
 let linkValidator: LinkValidator;
@@ -18,6 +18,7 @@ function registerPRCommands(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand(
             'kubelingoassist.fetchPRInfo',
             async (prNumber?: number) => {
+                const i18n = container.getI18n();
                 try {
                     if (!prNumber) {
                         const input = await vscode.window.showInputBox({
@@ -95,6 +96,8 @@ function registerPRCommands(context: vscode.ExtensionContext) {
 }
 
 export function activate(context: vscode.ExtensionContext) {
+    container.initialize();
+
     statusBarManager = new StatusBarManager();
     linkValidator = new LinkValidator();
     translationCommandManager = new TranslationCommandManager();

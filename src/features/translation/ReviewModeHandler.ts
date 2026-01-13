@@ -3,7 +3,7 @@ import * as path from 'path';
 import { TranslationUtils } from './TranslationUtils';
 import { StatusBarManager } from '../ui/StatusBarManager';
 import { GitService } from '../git';
-import { i18n } from '../i18n';
+import { getI18n } from '../i18n';
 import {
     isTranslationFile,
     isEnglishFile,
@@ -30,20 +30,20 @@ export class ReviewModeHandler {
 
     async openReviewFile(): Promise<void> {
         if (!this.gitService) {
-            i18n.showErrorMessage('messages.gitUtilitiesNotAvailable');
+            getI18n().showErrorMessage('messages.gitUtilitiesNotAvailable');
             return;
         }
 
         const isK8sRepo = await this.gitService.isKubernetesWebsiteRepository();
         if (!isK8sRepo) {
-            i18n.showErrorMessage('messages.kubernetesRepoOnly');
+            getI18n().showErrorMessage('messages.kubernetesRepoOnly');
             return;
         }
 
         try {
             const currentEditor = vscode.window.activeTextEditor;
             if (!currentEditor) {
-                i18n.showInformationMessage('messages.noActiveFile');
+                getI18n().showInformationMessage('messages.noActiveFile');
                 return;
             }
 
@@ -54,19 +54,19 @@ export class ReviewModeHandler {
             const isEngFile = isEnglishFile(currentFileRelativePath) || isEnglishFile(currentFilePath);
 
             if (isEngFile || !isTransFile) {
-                i18n.showInformationMessage('messages.reviewFileNotTranslationFile');
+                getI18n().showInformationMessage('messages.reviewFileNotTranslationFile');
                 return;
             }
 
             const originalEnglishPath = getEnglishPathFromTranslation(currentFileRelativePath);
             if (!originalEnglishPath) {
-                i18n.showInformationMessage('messages.couldNotFindEnglishFile');
+                getI18n().showInformationMessage('messages.couldNotFindEnglishFile');
                 return;
             }
 
             const workspaceFolders = vscode.workspace.workspaceFolders;
             if (!workspaceFolders || workspaceFolders.length === 0) {
-                i18n.showErrorMessage('messages.noActiveFile');
+                getI18n().showErrorMessage('messages.noActiveFile');
                 return;
             }
 
@@ -75,14 +75,14 @@ export class ReviewModeHandler {
 
             const englishFileExists = await fileExistsAsync(absoluteEnglishPath);
             if (!englishFileExists) {
-                i18n.showInformationMessage('messages.englishFileNotFound', { path: originalEnglishPath });
+                getI18n().showInformationMessage('messages.englishFileNotFound', { path: originalEnglishPath });
                 return;
             }
 
             await this.openFileInReviewMode(currentFilePath);
-            i18n.showInformationMessage('messages.openedForReview', { path: currentFileRelativePath });
+            getI18n().showInformationMessage('messages.openedForReview', { path: currentFileRelativePath });
         } catch (error) {
-            i18n.showErrorMessage('messages.failedToOpenReviewFile', {
+            getI18n().showErrorMessage('messages.failedToOpenReviewFile', {
                 error: String(error)
             });
         }
@@ -90,7 +90,7 @@ export class ReviewModeHandler {
 
     async openFileInReviewMode(filePath: string): Promise<void> {
         if (!this.gitService) {
-            i18n.showErrorMessage('messages.gitUtilitiesNotAvailable');
+            getI18n().showErrorMessage('messages.gitUtilitiesNotAvailable');
             return;
         }
 
@@ -100,7 +100,7 @@ export class ReviewModeHandler {
 
             const originalEnglishPath = this.gitService.getOriginalEnglishPath(filePath);
             if (!originalEnglishPath) {
-                i18n.showErrorMessage('messages.couldNotDetermineOriginalPath');
+                getI18n().showErrorMessage('messages.couldNotDetermineOriginalPath');
                 return;
             }
 
@@ -112,9 +112,9 @@ export class ReviewModeHandler {
             await this.translationUtils.openSplitView(absoluteEnglishPath, filePath);
             await this.statusBarManager?.updateAllStatusBarItems(absoluteEnglishPath, filePath);
 
-            i18n.showInformationMessage('messages.openedForReview', { path: filePath });
+            getI18n().showInformationMessage('messages.openedForReview', { path: filePath });
         } catch (error) {
-            i18n.showErrorMessage('messages.failedToOpenReviewMode', {
+            getI18n().showErrorMessage('messages.failedToOpenReviewMode', {
                 error: String(error)
             });
         }

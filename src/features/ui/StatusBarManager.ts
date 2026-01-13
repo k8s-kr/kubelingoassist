@@ -1,7 +1,7 @@
 // src/status-bar.ts
 import * as vscode from 'vscode';
 import { TranslationUtils } from '../translation/TranslationUtils';
-import { i18n } from '../i18n';
+import { getI18n } from '../i18n';
 
 const STATUS_BAR_PRIORITY = 99;
 
@@ -15,8 +15,8 @@ export class StatusBarManager {
   constructor() {
     this.languageStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, STATUS_BAR_PRIORITY);
     this.languageStatusBarItem.command = 'kubelingoassist.openTranslationFile';
-    this.languageStatusBarItem.text = `$(globe) ${i18n.t('ui.statusBar.translationFile')}`;
-    this.languageStatusBarItem.tooltip = i18n.t('ui.statusBar.openTranslationFile');
+    this.languageStatusBarItem.text = `$(globe) ${getI18n().t('ui.statusBar.translationFile')}`;
+    this.languageStatusBarItem.tooltip = getI18n().t('ui.statusBar.openTranslationFile');
     this.languageStatusBarItem.show();
   }
 
@@ -38,15 +38,15 @@ export class StatusBarManager {
 
       this.languageStatusBarItem.text = `$(globe) ${sourceLanguage} → ${targetLanguage}${lineInfo}`;
       this.languageStatusBarItem.tooltip = lineComparison
-        ? i18n.t('ui.statusBar.lineComparison', {
+        ? getI18n().t('ui.statusBar.lineComparison', {
             originalLines: lineComparison.originalLines.toString(),
             translationLines: lineComparison.translationLines.toString(),
             percentage: lineComparison.percentage.toString()
           })
-        : i18n.t('ui.statusBar.openTranslationFile');
+        : getI18n().t('ui.statusBar.openTranslationFile');
     } else {
-      this.languageStatusBarItem.text = `$(globe) ${i18n.t('ui.statusBar.translationFile')}`;
-      this.languageStatusBarItem.tooltip = i18n.t('ui.statusBar.openTranslationFile');
+      this.languageStatusBarItem.text = `$(globe) ${getI18n().t('ui.statusBar.translationFile')}`;
+      this.languageStatusBarItem.tooltip = getI18n().t('ui.statusBar.openTranslationFile');
     }
   }
 
