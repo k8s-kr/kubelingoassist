@@ -165,6 +165,8 @@ chore: update dependencies
 
 ### Before Submitting
 
+- [ ] Run lint and fix errors (`npm run lint`)
+- [ ] Format your code (`npm run format`)
 - [ ] Ensure your code builds without errors (`npm run build`)
 - [ ] Run tests and ensure they pass (`npm run test`)
 - [ ] Update documentation if needed
