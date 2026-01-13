@@ -9,6 +9,7 @@ Thank you for your interest in contributing to KubeLingoAssist! This document pr
 - [Making Changes](#making-changes)
 - [Commit Message Convention](#commit-message-convention)
 - [Pull Request Process](#pull-request-process)
+- [Releasing](#releasing)
 
 ## Branch Strategy
 
@@ -187,6 +188,10 @@ chore: update dependencies
 
 - Delete your feature branch
 - Pull the latest `develop` to keep your local branch updated
+
+## Releasing
+
+For maintainers: see [RELEASE.md](./RELEASE.md) for versioning policy and release checklist.
 
 ## Questions?
 
