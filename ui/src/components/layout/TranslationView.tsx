@@ -37,7 +37,6 @@ export const TranslationView: React.FC = () => {
   };
 
   useEffect(() => {
-    // 1) 웹뷰 로컬(getState) 우선 복원
     const savedState = vscodeGetState?.();
     if (savedState) {
       setTranslationAppState(previousState => {
@@ -51,7 +50,6 @@ export const TranslationView: React.FC = () => {
         return nextState;
       });
     } else if (initialState) {
-      // 2) 확장에서 주입한 초기 상태
       setTranslationAppState(previousState => {
         const nextState = {
         ...previousState,
@@ -64,7 +62,6 @@ export const TranslationView: React.FC = () => {
       });
     }
 
-    // 3) 확장 → 웹뷰 상태 방송 수신
     const messageListener = (event: MessageEvent) => {
       const message = event.data;
       if (message?.type === 'stateUpdate' && message?.payload) {
@@ -78,8 +75,6 @@ export const TranslationView: React.FC = () => {
             updatedState.language = nextLanguage;
             applyLanguage(nextLanguage);
           }
-
-          // 수신 즉시 웹뷰 로컬에도 저장
           vscodeSetState?.(updatedState);
           return updatedState;
         });
@@ -89,9 +84,8 @@ export const TranslationView: React.FC = () => {
     window.addEventListener('message', messageListener);
     return () => window.removeEventListener('message', messageListener);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // 최초 1회만
+  }, []);
 
-  // 로컬 state가 바뀔 때(초기화 포함) 웹뷰 로컬 스토리지에도 저장
   useEffect(() => {
     vscodeSetState?.(translationAppState);
   }, [translationAppState, vscodeSetState]);

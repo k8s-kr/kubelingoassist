@@ -1,13 +1,6 @@
-/**
- * 지원되는 언어 코드를 나타내는 타입입니다.
- */
 export type SupportedLanguage = 'en' | 'ko' | 'ja' | 'zh-cn' | 'zh' | 'fr' | 'de' | 'es';
 
-/**
- * 번역 키 구조를 정의하는 인터페이스입니다.
- */
 export interface TranslationKeys {
-  // Common messages
   common: {
     ok: string;
     cancel: string;
@@ -18,27 +11,20 @@ export interface TranslationKeys {
     success: string;
   };
 
-  // Commands and actions
   commands: {
     openTranslationFile: string;
     openReviewFile: string;
     toggleSyncScroll: string;
-    toggleKubelingo: string;
     changeMode: string;
   };
 
-  // Messages
   messages: {
-    kubelingoDisabled: string;
-    enableKubelingoFirst: string;
     noActiveFile: string;
     invalidFilePath: string;
     cannotFindTranslationPath: string;
     splitViewOpened: string;
     syncScrollEnabled: string;
     syncScrollDisabled: string;
-    kubelingoEnabled: string;
-    kubelingoDisabledMsg: string;
     reviewModeEnabled: string;
     translationModeEnabled: string;
     translationFileNotExists: string;
@@ -71,7 +57,6 @@ export interface TranslationKeys {
     };
   };
 
-  // Notification messages
   notifications: {
     info: {
       extensionActivated: string;
@@ -121,7 +106,6 @@ export interface TranslationKeys {
     };
   };
 
-  // UI Labels
   ui: {
     selectTargetLanguage: string;
     selectFileToReview: string;
@@ -184,7 +168,6 @@ export interface TranslationKeys {
     };
   };
 
-  // File paths and extensions
   paths: {
     contentDirectory: string;
     englishContent: string;
@@ -192,33 +175,14 @@ export interface TranslationKeys {
   };
 }
 
-/**
- * 언어별 번역 리소스를 나타내는 타입입니다.
- */
 export type TranslationResource = TranslationKeys;
 
-/**
- * 언어 정보를 나타내는 인터페이스입니다.
- */
 export interface LanguageInfo {
     label: string;
     value: string;
 }
 
-/**
- * 지원되는 언어 코드와 언어명 매핑입니다.
- */
-
-
-/**
- * 지원되는 언어 코드 배열입니다.
- */
 export const SUPPORTED_LANGUAGES: SupportedLanguage[] = ['en', 'ko', 'ja', 'zh-cn', 'zh', 'fr', 'de', 'es'];
-
-/**
- * 언어 선택을 위한 옵션 배열입니다.
- */
-
 
 export const LANGUAGE_NAMES: { [key: string]: string } = {
         'en': 'English',
