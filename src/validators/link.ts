@@ -29,14 +29,22 @@ const MESSAGES = {
     CODE_ACTION_TITLE: (language: string) => `Add language path: /${language}/docs/...`
 } as const;
 
+export type FileExistsChecker = (filePath: string) => boolean;
+
+export interface LinkValidatorOptions {
+    fileExistsChecker?: FileExistsChecker;
+}
+
 export class LinkValidator {
     private diagnostics: vscode.DiagnosticCollection;
     private codeActionProvider: LinkCodeActionProvider;
     private translationUtils = new TranslationUtils();
+    private fileExists: FileExistsChecker;
 
-    constructor() {
+    constructor(options: LinkValidatorOptions = {}) {
         this.diagnostics = vscode.languages.createDiagnosticCollection('kubelingoassist-links');
         this.codeActionProvider = new LinkCodeActionProvider();
+        this.fileExists = options.fileExistsChecker ?? fileExistsSync;
     }
 
     public validateLinks(document: vscode.TextDocument): number {
@@ -71,13 +79,13 @@ export class LinkValidator {
 
             if (expectedTranslationPath) {
                 if (baseLinkPath.endsWith('/')) {
-                    const folderExists = fileExistsSync(expectedTranslationPath);
+                    const folderExists = this.fileExists(expectedTranslationPath);
                     const fileName = path.basename(baseLinkPath.replace(/\/$/, '')) + '.md';
                     const filePath = path.join(path.dirname(expectedTranslationPath), fileName);
-                    const fileExists = fileExistsSync(filePath);
+                    const fileExists = this.fileExists(filePath);
                     translationExists = folderExists || fileExists;
                 } else {
-                    translationExists = fileExistsSync(expectedTranslationPath);
+                    translationExists = this.fileExists(expectedTranslationPath);
                 }
             }
 

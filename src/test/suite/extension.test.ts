@@ -8,6 +8,7 @@ import './link-validator-unit.test';
 import './code-action-provider.test';
 import './integration.test';
 import './edge-cases.test';
+import './service-container.test';
 
 suite('KubeLingoAssist Extension Test Suite', () => {
     vscode.window.showInformationMessage(getI18n().t('ui.test.startingTests'));

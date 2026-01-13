@@ -154,17 +154,17 @@ This [external link](https://example.com) should be ignored.`;
             uri: vscode.Uri.file('/content/ko/docs/test.md')
         } as vscode.TextDocument;
 
-        // Mock file system check to always return false (no translation exists)
-        const originalFileExists = (linkValidator as any).fileExists;
-        (linkValidator as any).fileExists = () => false;
+        // Use constructor injection for file existence mock
+        const validatorWithMock = new LinkValidator({
+            fileExistsChecker: () => false
+        });
 
-        const diagnosticCount = linkValidator.validateLinks(mockDocument);
-        
+        const diagnosticCount = validatorWithMock.validateLinks(mockDocument);
+
         // Should process 2 valid links but find 0 diagnostics (no translations exist)
         assert.strictEqual(diagnosticCount, 0);
 
-        // Restore original method
-        (linkValidator as any).fileExists = originalFileExists;
+        validatorWithMock.dispose();
     });
 
     test('should handle concurrent validation calls', () => {
