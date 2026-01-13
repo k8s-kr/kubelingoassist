@@ -36,3 +36,7 @@ npm-debug.log*
 ui/package-lock.json
 
 .vscode-test/
+
+# Coverage reports
+coverage/
+.c8_output/

@@ -209,14 +209,22 @@ export class PRInfoService {
                 return [];
             }
 
-            return data.files.map((file: any) => ({
-                path: file.path,
-                status: this._normalizeStatus(file.changeType || 'modified'),
-                additions: file.additions || 0,
-                deletions: file.deletions || 0,
-                changes: (file.additions || 0) + (file.deletions || 0),
-                previousPath: file.previousPath
-            }));
+            return data.files.map((file: any) => {
+                const status = file.changeType?.toLowerCase() || 'modified';
+                let normalizedStatus: 'added' | 'modified' | 'removed' | 'renamed' = 'modified';
+                if (status.includes('add')) normalizedStatus = 'added';
+                else if (status.includes('delet') || status.includes('remov')) normalizedStatus = 'removed';
+                else if (status.includes('renam')) normalizedStatus = 'renamed';
+
+                return {
+                    path: file.path,
+                    status: normalizedStatus,
+                    additions: file.additions || 0,
+                    deletions: file.deletions || 0,
+                    changes: (file.additions || 0) + (file.deletions || 0),
+                    previousPath: file.previousPath
+                };
+            });
         } catch (error) {
             console.error(`Failed to fetch files for PR #${prNumber}:`, error);
             return [];
@@ -288,42 +296,38 @@ export class PRInfoService {
     }
 
     async getCurrentPRNumber(): Promise<number | null> {
+        const cwd = this.getWorkspaceRoot();
+
+        // Try current repository first
         try {
-            const cwd = this.getWorkspaceRoot();
-
-            try {
-                const { stdout } = await exec('gh pr view --json number -q .number', { cwd });
-                const prNumber = parseInt(stdout.trim());
-                if (!isNaN(prNumber)) {
-                    console.log(`Found PR #${prNumber} in current repository`);
-                    return prNumber;
-                }
-            } catch (error) {
-                console.log('No PR found in current repository, checking parent...');
+            const { stdout } = await exec('gh pr view --json number -q .number', { cwd });
+            const prNumber = parseInt(stdout.trim());
+            if (!isNaN(prNumber)) {
+                console.log(`Found PR #${prNumber} in current repository`);
+                return prNumber;
             }
+        } catch {
+            console.log('No PR found in current repository, checking parent...');
+        }
 
-            const parentRepo = await this.getParentRepo();
-            if (parentRepo) {
-                try {
-                    const { stdout } = await exec(
-                        `gh pr view --repo ${parentRepo} --json number -q .number`,
-                        { cwd }
-                    );
-                    const prNumber = parseInt(stdout.trim());
-                    if (!isNaN(prNumber)) {
-                        console.log(`Found PR #${prNumber} in parent repository: ${parentRepo}`);
-                        return prNumber;
-                    }
-                } catch (error) {
-                    console.error('No PR found in parent repository:', error);
-                }
-            }
-
-            return null;
-        } catch (error) {
-            console.error('Failed to get current PR number:', error);
+        // Try parent repository if this is a fork
+        const parentRepo = await this.getParentRepo();
+        if (!parentRepo) {
             return null;
         }
+
+        try {
+            const { stdout } = await exec(`gh pr view --repo ${parentRepo} --json number -q .number`, { cwd });
+            const prNumber = parseInt(stdout.trim());
+            if (!isNaN(prNumber)) {
+                console.log(`Found PR #${prNumber} in parent repository: ${parentRepo}`);
+                return prNumber;
+            }
+        } catch {
+            console.log('No PR found in parent repository');
+        }
+
+        return null;
     }
 
     async getFileDiff(prNumber: number, filePath: string, targetRepo?: string): Promise<string | null> {
@@ -452,29 +456,9 @@ export class PRInfoService {
         );
     }
 
-    private _normalizeStatus(status: string): 'added' | 'modified' | 'removed' | 'renamed' {
-        const lowerStatus = status.toLowerCase();
-
-        if (lowerStatus.includes('add')) return 'added';
-        if (lowerStatus.includes('modif') || lowerStatus.includes('change')) return 'modified';
-        if (lowerStatus.includes('delet') || lowerStatus.includes('remov')) return 'removed';
-        if (lowerStatus.includes('renam')) return 'renamed';
-
-        return 'modified';
-    }
-
     async prExists(prNumber: number): Promise<boolean> {
         const info = await this.getPRInfo(prNumber);
         return info !== null;
-    }
-
-    private titleToSlug(title: string): string {
-        return title
-            .toLowerCase()
-            .replace(/[^a-z0-9가-힣]+/g, '-')
-            .replace(/^-+|-+$/g, '')
-            .replace(/-+/g, '-')
-            .slice(0, 50);
     }
 
     async checkoutPR(prNumber: number, prTitle: string, targetRepo?: string): Promise<void> {
@@ -485,7 +469,7 @@ export class PRInfoService {
                 targetRepo = await this.getTargetRepo() || undefined;
             }
 
-            const titleSlug = this.titleToSlug(prTitle);
+            const titleSlug = prTitle.toLowerCase().replace(/[^a-z0-9가-힣]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 50);
             const branchName = `pr-${prNumber}/${titleSlug}`;
             const repoOption = targetRepo ? `--repo ${targetRepo}` : '';
 

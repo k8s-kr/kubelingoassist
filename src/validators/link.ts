@@ -8,25 +8,9 @@ import {
 } from '../utils';
 
 const CONSTANTS = {
-    DIAGNOSTICS_COLLECTION_NAME: 'kubelingoassist-links',
     DIAGNOSTIC_SOURCE: 'KubeLingoAssist',
     DIAGNOSTIC_CODE: 'missing-language-path',
-    LINK_REGEX_SOURCE: /\[([^\]]*)\]\(\/docs\/([^)]*)\)/,
-    LANGUAGE_CODE_REGEX: /^[a-z]{2}\/|^en\//,
-    TRANSLATION_FILE_PATTERN: /\/content\/([^\/]+)\/docs\//,
-    EXCLUDED_LANGUAGE: 'en'
-} as const;
-
-function createLinkRegex(): RegExp {
-    return new RegExp(CONSTANTS.LINK_REGEX_SOURCE.source, 'g');
-}
-
-const MESSAGES = {
-    WARNING_TEMPLATE: (resourceType: string, linkText: string, currentPath: string, suggestedPath: string) =>
-        `⚠️ Translation ${resourceType} exists but language path is missing.\n` +
-        `Current: [${linkText}](/docs/${currentPath})\n` +
-        `Suggested: [${linkText}](${suggestedPath})`,
-    CODE_ACTION_TITLE: (language: string) => `Add language path: /${language}/docs/...`
+    LINK_REGEX: /\[([^\]]*)\]\(\/docs\/([^)]*)\)/g
 } as const;
 
 export type FileExistsChecker = (filePath: string) => boolean;
@@ -57,7 +41,7 @@ export class LinkValidator {
         const diagnostics: vscode.Diagnostic[] = [];
         const text = document.getText();
 
-        const linkRegex = createLinkRegex();
+        const linkRegex = new RegExp(CONSTANTS.LINK_REGEX.source, 'g');
         let match;
 
         while ((match = linkRegex.exec(text)) !== null) {
@@ -164,8 +148,7 @@ export class LinkCodeActionProvider implements vscode.CodeActionProvider {
     ): vscode.CodeAction | undefined {
         try {
             const text = document.getText(diagnostic.range);
-            const regex = CONSTANTS.LINK_REGEX_SOURCE;
-            const match = text.match(regex);
+            const match = text.match(/\[([^\]]*)\]\(\/docs\/([^)]*)\)/);
 
             if (!match || match.length < 3) {
                 return undefined;
@@ -181,9 +164,8 @@ export class LinkCodeActionProvider implements vscode.CodeActionProvider {
 
             const suggestedPath = `/${currentLanguage.toLowerCase()}/docs/${linkPath}`;
             const newLinkText = `[${linkText}](${suggestedPath})`;
-            const title = MESSAGES.CODE_ACTION_TITLE(currentLanguage);
 
-            const action = new vscode.CodeAction(title, vscode.CodeActionKind.QuickFix);
+            const action = new vscode.CodeAction(`Add language path: /${currentLanguage}/docs/...`, vscode.CodeActionKind.QuickFix);
             action.edit = new vscode.WorkspaceEdit();
             action.edit.replace(document.uri, diagnostic.range, newLinkText);
             action.diagnostics = [diagnostic];
