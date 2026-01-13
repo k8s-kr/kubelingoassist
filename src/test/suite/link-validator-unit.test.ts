@@ -22,7 +22,7 @@ suite('LinkValidator Unit Tests', () => {
             { path: '/content/en/blog/post.md', expected: false },
             { path: '/other/path/file.md', expected: false },
             { path: '/content/invalid.md', expected: false },
-            { path: '/content/ko/blog/post.md', expected: false } // blog은 docs가 아니므로 false
+            { path: '/content/ko/blog/post.md', expected: false }
         ];
 
         testCases.forEach(({ path, expected }) => {

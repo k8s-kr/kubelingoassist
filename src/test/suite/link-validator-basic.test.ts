@@ -22,12 +22,10 @@ suite('LinkValidator Basic Tests', () => {
     });
 
     test('should validate expected translation path generation', () => {
-        // getExpectedTranslationPath 로직 테스트
         const currentPath = '/content/ko/docs/concepts/overview.md';
         const linkPath = 'concepts/cluster.md';
         const language = 'ko';
-        
-        // 기대되는 경로: /content/ko/docs/concepts/cluster.md
+
         const contentMatch = currentPath.match(/(.*\/content)\//);
         assert.strictEqual(contentMatch![1], '/content');
         
@@ -93,8 +91,7 @@ suite('LinkValidator Basic Tests', () => {
         
         testCases.forEach(({ linkPath, expected, type }) => {
             let expectedPath = `${contentRoot}/${language.toLowerCase()}/docs/${linkPath}`;
-            
-            // 폴더가 아니고 .md가 없으면 .md 추가
+
             if (!linkPath.endsWith('/') && !expectedPath.endsWith('.md')) {
                 expectedPath += '.md';
             }

@@ -5,7 +5,6 @@ suite('Translation Utils Tests', () => {
     const translationUtils = new TranslationUtils();
 
     test('extractLanguageCode should extract correct language code from all content paths', () => {
-        // /content/en/** 확장 테스트
         assert.strictEqual(translationUtils.extractLanguageCode('/content/en/docs/test.md'), 'en');
         assert.strictEqual(translationUtils.extractLanguageCode('/content/en/blog/post.md'), 'en');
         assert.strictEqual(translationUtils.extractLanguageCode('/content/en/case-studies/example.md'), 'en');
