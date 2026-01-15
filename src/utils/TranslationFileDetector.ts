@@ -25,10 +25,13 @@ export function extractLanguageCode(filePath: string): string {
 
 export function getEnglishPathFromTranslation(translationPath: string): string | null {
     const normalizedPath = translationPath.replace(/\\/g, '/');
-    const langMatch = normalizedPath.match(/\/content\/([^/]+)\//);
+    // Support both absolute paths (/content/ko/) and relative paths (content/ko/)
+    const langMatch = normalizedPath.match(/(?:^|\/)content\/([^/]+)\//);
 
     if (langMatch && langMatch[1] !== ENGLISH_LANGUAGE_CODE) {
-        return normalizedPath.replace(`/content/${langMatch[1]}/`, '/content/en/');
+        const langCode = langMatch[1];
+        // Preserve the path format (with or without leading slash)
+        return normalizedPath.replace(`content/${langCode}/`, 'content/en/');
     }
 
     return null;

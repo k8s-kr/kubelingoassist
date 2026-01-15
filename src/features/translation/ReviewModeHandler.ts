@@ -2,14 +2,8 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { TranslationUtils } from './TranslationUtils';
 import { StatusBarManager } from '../ui/StatusBarManager';
-import { GitService } from '../git';
+import { GitService, GitChangedFile } from '../git';
 import { getI18n } from '../i18n';
-import {
-    isTranslationFile,
-    isEnglishFile,
-    getEnglishPathFromTranslation,
-    fileExistsAsync
-} from '../../utils';
 
 export class ReviewModeHandler {
     private gitService: GitService | null = null;
@@ -41,51 +35,64 @@ export class ReviewModeHandler {
         }
 
         try {
-            const currentEditor = vscode.window.activeTextEditor;
-            if (!currentEditor) {
-                getI18n().showInformationMessage('messages.noActiveFile');
+            const commits = await this.gitService.findCommitsWithTranslationFiles(1);
+            if (commits.length === 0) {
+                getI18n().showErrorMessage('messages.noRecentCommits');
                 return;
             }
 
-            const currentFilePath = currentEditor.document.uri.fsPath;
-            const currentFileRelativePath = vscode.workspace.asRelativePath(currentFilePath);
-
-            const isTransFile = isTranslationFile(currentFileRelativePath) || isTranslationFile(currentFilePath);
-            const isEngFile = isEnglishFile(currentFileRelativePath) || isEnglishFile(currentFilePath);
-
-            if (isEngFile || !isTransFile) {
-                getI18n().showInformationMessage('messages.reviewFileNotTranslationFile');
+            const commitInfo = commits[0];
+            const translationFiles = this.gitService.filterTranslationFiles(commitInfo.files);
+            if (translationFiles.length === 0) {
+                getI18n().showErrorMessage('messages.noTranslationFilesFound');
                 return;
             }
 
-            const originalEnglishPath = getEnglishPathFromTranslation(currentFileRelativePath);
-            if (!originalEnglishPath) {
-                getI18n().showInformationMessage('messages.couldNotFindEnglishFile');
+            if (translationFiles.length === 1) {
+                await this.openFileInReviewMode(translationFiles[0].absPath);
                 return;
             }
 
-            const workspaceFolders = vscode.workspace.workspaceFolders;
-            if (!workspaceFolders || workspaceFolders.length === 0) {
-                getI18n().showErrorMessage('messages.noActiveFile');
+            const selectedFiles = await this.showFileSelectionQuickPick(translationFiles);
+            if (selectedFiles.length === 0) {
                 return;
             }
 
-            const workspaceRoot = workspaceFolders[0].uri.fsPath;
-            const absoluteEnglishPath = path.join(workspaceRoot, originalEnglishPath);
-
-            const englishFileExists = await fileExistsAsync(absoluteEnglishPath);
-            if (!englishFileExists) {
-                getI18n().showInformationMessage('messages.englishFileNotFound', { path: originalEnglishPath });
-                return;
-            }
-
-            await this.openFileInReviewMode(currentFilePath);
-            getI18n().showInformationMessage('messages.openedForReview', { path: currentFileRelativePath });
+            await this.openAllFilesInReviewMode(selectedFiles);
         } catch (error) {
             getI18n().showErrorMessage('messages.failedToOpenReviewFile', {
                 error: String(error)
             });
         }
+    }
+
+    private async showFileSelectionQuickPick(files: GitChangedFile[]): Promise<GitChangedFile[]> {
+        const items = files.map(file => ({
+            label: path.basename(file.path),
+            description: file.path,
+            file
+        }));
+
+        const selected = await vscode.window.showQuickPick(items, {
+            canPickMany: true,
+            placeHolder: getI18n().t('ui.selectFileToReview')
+        });
+
+        if (!selected) {
+            return [];
+        }
+
+        return selected.map(item => item.file);
+    }
+
+    private async openAllFilesInReviewMode(files: GitChangedFile[]): Promise<void> {
+        for (const file of files) {
+            await this.openFileInReviewMode(file.absPath);
+        }
+
+        getI18n().showInformationMessage('messages.openedForReview', {
+            path: `${files.length} files`
+        });
     }
 
     async openFileInReviewMode(filePath: string): Promise<void> {
