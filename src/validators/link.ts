@@ -27,10 +27,8 @@ const CONSTANTS = {
 } as const;
 
 const MESSAGES = {
-    WARNING_TEMPLATE: (resourceType: string, linkText: string, currentPath: string, suggestedPath: string) =>
-        `⚠️ 번역 ${resourceType}이 존재하는데 언어 경로가 누락되었습니다.\n` +
-        `현재: [${linkText}](/docs/${currentPath})\n` +
-        `권장: [${linkText}](${suggestedPath})`,
+    WARNING_TEMPLATE: (resourceType: string) =>
+        `⚠️ 번역 ${resourceType}이 존재합니다.`,
     CODE_ACTION_TITLE: (language: string) => `언어 경로 추가: /${language}/docs/...`
 } as const;
 
@@ -87,16 +85,21 @@ export class LinkValidator {
                 }
             }
 
-            if (translationExists) {
+            if (translationExists && expectedTranslationPath) {
                 const isFolder = baseLinkPath.endsWith('/');
                 const resourceType = isFolder ? '폴더' : '파일';
-                const suggestedPath = `/${currentLanguage.toLowerCase()}/docs/${linkPath}`;
-                const message = `⚠️ 번역 ${resourceType}이 존재하는데 언어 경로가 누락되었습니다.\n` +
-                              `현재: [${linkText}](/docs/${linkPath})\n` +
-                              `권장: [${linkText}](${suggestedPath})`;
+                const message = `⚠️ 번역 ${resourceType}이 존재합니다.`;
                 const diagnostic = new vscode.Diagnostic(range, message, vscode.DiagnosticSeverity.Warning);
                 diagnostic.source = 'KubeLingoAssist';
                 diagnostic.code = 'missing-language-path';
+                const translationFilePath = this.resolveTranslationFilePath(expectedTranslationPath, isFolder);
+                const translationUri = vscode.Uri.file(translationFilePath);
+                diagnostic.relatedInformation = [
+                    new vscode.DiagnosticRelatedInformation(
+                        new vscode.Location(translationUri, new vscode.Position(0, 0)),
+                        `/${currentLanguage.toLowerCase()}/docs/${linkPath}`
+                    )
+                ];
                 diagnostics.push(diagnostic);
             }
         }
@@ -153,13 +156,23 @@ export class LinkValidator {
 
     private createDiagnostic(linkInfo: LinkInfo, validationResult: ValidationResult, currentLanguage: string): vscode.Diagnostic {
         const resourceType = validationResult.isFolder ? '폴더' : '파일';
-        const suggestedPath = `/${currentLanguage.toLowerCase()}/docs/${linkInfo.path}`;
-        const message = MESSAGES.WARNING_TEMPLATE(resourceType, linkInfo.text, linkInfo.path, suggestedPath);
-        
+        const message = MESSAGES.WARNING_TEMPLATE(resourceType);
+
         const diagnostic = new vscode.Diagnostic(linkInfo.range, message, vscode.DiagnosticSeverity.Warning);
         diagnostic.source = CONSTANTS.DIAGNOSTIC_SOURCE;
         diagnostic.code = CONSTANTS.DIAGNOSTIC_CODE;
-        
+
+        if (validationResult.expectedPath) {
+            const translationFilePath = this.resolveTranslationFilePath(validationResult.expectedPath, validationResult.isFolder);
+            const translationUri = vscode.Uri.file(translationFilePath);
+            diagnostic.relatedInformation = [
+                new vscode.DiagnosticRelatedInformation(
+                    new vscode.Location(translationUri, new vscode.Position(0, 0)),
+                    `/${currentLanguage.toLowerCase()}/docs/${linkInfo.path}`
+                )
+            ];
+        }
+
         return diagnostic;
     }
 
@@ -176,6 +189,25 @@ export class LinkValidator {
         return this.codeActionProvider;
     }
 
+
+    private resolveTranslationFilePath(expectedPath: string, isFolder: boolean): string {
+        if (!isFolder) {
+            return expectedPath;
+        }
+
+        const indexPath = path.join(expectedPath, '_index.md');
+        if (this.fileExists(indexPath)) {
+            return indexPath;
+        }
+
+        const folderName = path.basename(expectedPath);
+        const parentFilePath = path.join(path.dirname(expectedPath), folderName + '.md');
+        if (this.fileExists(parentFilePath)) {
+            return parentFilePath;
+        }
+
+        return expectedPath;
+    }
 
     private getExpectedTranslationPath(currentFilePath: string, linkPath: string, language: string): string | null {
         try {

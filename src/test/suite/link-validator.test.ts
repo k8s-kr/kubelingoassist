@@ -243,7 +243,9 @@ This [external link](https://example.com) should be ignored.`;
         assert.strictEqual(diagnostic.source, 'KubeLingoAssist');
         assert.strictEqual(diagnostic.code, 'missing-language-path');
         assert.ok(diagnostic.message.includes('파일'));
-        assert.ok(diagnostic.message.includes('ko'));
+        assert.ok(diagnostic.message.includes('존재합니다'));
+        assert.ok(diagnostic.relatedInformation);
+        assert.ok(diagnostic.relatedInformation[0].message.includes('/ko/'));
     });
 
     test('should validate links end-to-end with mock document', () => {
