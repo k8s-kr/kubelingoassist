@@ -111,6 +111,31 @@ suite('LinkValidator Unit Tests', () => {
     (linkValidator as any).fileExists = originalFileExists;
   });
 
+  test('should detect links with different language prefix', () => {
+    const mockText = `# Test Document
+[english link](/en/docs/concepts/overview)
+[same lang link](/ko/docs/concepts/overview)`;
+
+    const mockDocument = {
+      getText: () => mockText,
+      positionAt: (offset: number) => new vscode.Position(0, offset),
+      uri: vscode.Uri.file('/content/ko/docs/test.md'),
+    } as vscode.TextDocument;
+
+    const originalFileExists = (linkValidator as any).fileExists;
+    const originalReadTitle = (linkValidator as any).readTitle;
+    (linkValidator as any).fileExists = () => true;
+    (linkValidator as any).readTitle = () => null;
+
+    const diagnosticCount = linkValidator.validateLinks(mockDocument);
+
+    // /en/docs/... should be detected (different lang), /ko/docs/... should be skipped (same lang)
+    assert.strictEqual(diagnosticCount, 1, 'Should detect 1 link with different language prefix');
+
+    (linkValidator as any).fileExists = originalFileExists;
+    (linkValidator as any).readTitle = originalReadTitle;
+  });
+
   test('should handle concurrent validation calls', () => {
     const mockDocument1 = {
       getText: () => '[link1](/docs/concepts/overview1)',

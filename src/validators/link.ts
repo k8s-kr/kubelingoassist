@@ -11,7 +11,7 @@ import {
 const CONSTANTS = {
   DIAGNOSTIC_SOURCE: 'KubeLingoAssist',
   DIAGNOSTIC_CODE: 'missing-language-path',
-  LINK_REGEX: /\[([^\]]*)\]\(\/docs\/([^)]*)\)/g,
+  LINK_REGEX: /\[([^\]]*)\]\(\/(?:([a-z]{2}(?:-[a-z]{2})?)\/)?docs\/([^)]*)\)/g,
 } as const;
 
 const MESSAGES = {
@@ -56,14 +56,16 @@ export class LinkValidator {
     const diagnostics: vscode.Diagnostic[] = [];
     const text = document.getText();
 
-    const linkRegex = /\[([^\]]*)\]\(\/docs\/([^)]*)\)/g;
+    const linkRegex = /\[([^\]]*)\]\(\/(?:([a-z]{2}(?:-[a-z]{2})?)\/)?docs\/([^)]*)\)/g;
     let match;
 
     while ((match = linkRegex.exec(text)) !== null) {
-      const linkPath = match[2];
+      const linkLang = match[2]; // optional language prefix (e.g. 'ko', 'en', 'zh-cn')
+      const linkPath = match[3];
       const fullMatch = match[0];
 
-      if (linkPath.match(/^[a-z]{2}\//) || linkPath.match(/^en\//)) {
+      // Skip if the link already points to the current language
+      if (linkLang && linkLang.toLowerCase() === currentLanguage.toLowerCase()) {
         continue;
       }
 
