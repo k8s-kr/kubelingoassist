@@ -61,23 +61,15 @@ export const TranslationControlSection: React.FC<TranslationControlSectionProps>
       </div>
 
       {currentMode === KUBELINGO_MODES.REVIEW && (
-        <div className="pr-fetch-section" style={{ marginTop: '10px' }}>
+        <div className="pr-fetch-section">
           <div className="button-group">
             <input
               type="number"
+              className="pr-number-input"
               placeholder={uiI18n.t('ui.translationPanel.placeholder.prNumber')}
               value={prNumber}
               onChange={(e) => setPrNumber(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleFetchPR()}
-              style={{
-                padding: '6px 10px',
-                borderRadius: '4px',
-                border: '1px solid var(--vscode-input-border)',
-                backgroundColor: 'var(--vscode-input-background)',
-                color: 'var(--vscode-input-foreground)',
-                width: '80px',
-                fontSize: '13px'
-              }}
               aria-label={uiI18n.t('ui.translationPanel.accessibility.prNumberInput')}
             />
             <ControlButton

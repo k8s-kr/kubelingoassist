@@ -59,6 +59,7 @@ export const ko: TranslationResource = {
       checkingOutPR: 'PR #{number} 체크아웃 중...',
       prFetchedSuccess: 'PR #{number}: {title}\n{count}개의 번역 파일을 찾았습니다\n작성자: {author} | 상태: {state}',
       failedToFetchPRInfo: 'PR 정보 가져오기 실패: {error}',
+      noFilesToOpen: '이 PR에서 열 수 있는 파일이 없습니다.',
     },
   },
 
@@ -117,9 +118,11 @@ export const ko: TranslationResource = {
     fileStatus: {
       modified: '수정됨',
       added: '추가됨',
+      translation: '번역',
       other: '기타',
     },
     fromCommit: '커밋에서: {message}',
+    fromPR: 'PR #{number}에서: {title}',
     statusBar: {
       translationFile: '번역파일',
       openTranslationFile: '번역 파일 열기',
@@ -150,6 +153,10 @@ export const ko: TranslationResource = {
       kubelingoAssist: 'KubeLingoAssist',
       on: '켜짐',
       off: '꺼짐',
+    },
+    tooltip: {
+      translationGuideTitle: '번역 용어 참조',
+      translationGuideItem: '쿠버네티스 한글화팀 용어집',
     },
     translationPanel: {
       modes: {

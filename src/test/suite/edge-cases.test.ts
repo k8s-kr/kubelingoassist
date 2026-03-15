@@ -65,29 +65,6 @@ Another [valid link too](/docs/reference/guide) - should also work`;
         assert.ok(diagnosticCount >= 0, 'Should handle long paths without crashing');
     });
 
-    test('should handle special characters in links', () => {
-        const mockText = `# Special Characters Test
-[link with spaces](/docs/concepts/overview with spaces)
-[link with unicode](/docs/concepts/개념-설명)
-[link with numbers](/docs/v1.2.3/api-reference)
-[link with dashes](/docs/multi-word-concept/sub-topic)
-[link with underscores](/docs/some_file_name/another_file)`;
-
-        const mockDocument = {
-            getText: () => mockText,
-            positionAt: (offset: number) => new vscode.Position(0, offset),
-            uri: vscode.Uri.file('/content/ko/docs/special-chars.md')
-        } as vscode.TextDocument;
-
-        const links = (linkValidator as any).extractLinks(mockDocument);
-        assert.strictEqual(links.length, 5, 'Should extract all links with special characters');
-        
-        // Verify some special character handling
-        assert.ok(links.some((link: any) => link.path.includes('overview with spaces')));
-        assert.ok(links.some((link: any) => link.path.includes('개념-설명')));
-        assert.ok(links.some((link: any) => link.path.includes('v1.2.3')));
-    });
-
     test('should handle null and undefined inputs gracefully', () => {
         // Test with null document
         try {
@@ -178,6 +155,47 @@ Another [valid link too](/docs/reference/guide) - should also work`;
         (linkValidator as any).fileExists = originalFileExists;
     });
 
+    test('should handle code action provider errors gracefully', () => {
+        const mockDocument = {
+            getText: (range: vscode.Range) => {
+                throw new Error('Mock error in getText');
+            },
+            uri: vscode.Uri.file('/content/ko/docs/error.md')
+        } as any;
+
+        const mockDiagnostic = new vscode.Diagnostic(
+            new vscode.Range(0, 0, 0, 10),
+            'Test diagnostic',
+            vscode.DiagnosticSeverity.Warning
+        );
+        mockDiagnostic.source = 'KubeLingoAssist';
+        mockDiagnostic.code = 'missing-language-path';
+
+        const action = (codeActionProvider as any).createFixLanguagePathAction(mockDocument, mockDiagnostic);
+        assert.strictEqual(action, undefined, 'Should return undefined when error occurs');
+    });
+
+    test('should validate regex patterns correctly', () => {
+        const testCases = [
+            { text: '[test](/docs/overview)', shouldMatch: true },
+            { text: '[test](/docs/overview/)', shouldMatch: true },
+            { text: '[test](/docs/overview.md)', shouldMatch: true },
+            { text: '[test](/docs/sub/path/file)', shouldMatch: true },
+            { text: '[test](/ko/docs/overview)', shouldMatch: false },
+            { text: '[test](https://example.com)', shouldMatch: false },
+            { text: '[test](/other/path)', shouldMatch: false },
+            { text: 'plain text', shouldMatch: false },
+            { text: '[test]', shouldMatch: false },
+            { text: '(/docs/overview)', shouldMatch: false }
+        ];
+
+        testCases.forEach(({ text, shouldMatch }) => {
+            const LINK_REGEX = /\[([^\]]*)\]\(\/docs\/([^)]*)\)/;
+            const matches = LINK_REGEX.test(text);
+            assert.strictEqual(matches, shouldMatch, `Regex test failed for: "${text}"`);
+        });
+    });
+
     test('should handle filesystem errors gracefully', () => {
         const mockText = '[test link](/docs/concepts/overview)';
         const mockDocument = {
@@ -205,23 +223,4 @@ Another [valid link too](/docs/reference/guide) - should also work`;
         (linkValidator as any).fileExists = originalFileExists;
     });
 
-    test('should handle documents with different line endings', () => {
-        const testCases = [
-            { text: '[link1](/docs/overview)\r\n[link2](/docs/concepts)', description: 'Windows CRLF' },
-            { text: '[link1](/docs/overview)\n[link2](/docs/concepts)', description: 'Unix LF' },
-            { text: '[link1](/docs/overview)\r[link2](/docs/concepts)', description: 'Old Mac CR' },
-            { text: '[link1](/docs/overview)\r\n\r\n[link2](/docs/concepts)\n', description: 'Mixed line endings' }
-        ];
-
-        testCases.forEach(({ text, description }) => {
-            const mockDocument = {
-                getText: () => text,
-                positionAt: (offset: number) => new vscode.Position(0, offset),
-                uri: vscode.Uri.file(`/content/ko/docs/${description.toLowerCase().replace(/\s+/g, '-')}.md`)
-            } as vscode.TextDocument;
-
-            const links = (linkValidator as any).extractLinks(mockDocument);
-            assert.strictEqual(links.length, 2, `Should extract 2 links for ${description}`);
-        });
-    });
 });

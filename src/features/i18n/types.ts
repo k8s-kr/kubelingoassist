@@ -68,6 +68,7 @@ export interface TranslationKeys {
       checkingOutPR: string;
       prFetchedSuccess: string;
       failedToFetchPRInfo: string;
+      noFilesToOpen: string;
     };
   };
 
@@ -128,9 +129,11 @@ export interface TranslationKeys {
     fileStatus: {
       modified: string;
       added: string;
+      translation: string;
       other: string;
     };
     fromCommit: string;
+    fromPR: string;
     statusBar: {
       translationFile: string;
       openTranslationFile: string;
@@ -149,6 +152,10 @@ export interface TranslationKeys {
     };
     test: {
       startingTests: string;
+    };
+    tooltip: {
+      translationGuideTitle: string;
+      translationGuideItem: string;
     };
     accessibility: {
       translationModeSelector: string;

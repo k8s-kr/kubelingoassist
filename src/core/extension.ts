@@ -64,20 +64,53 @@ function registerPRCommands(context: vscode.ExtensionContext) {
                     let openedCount = 0;
                     let skippedCount = 0;
 
-                    // 마크다운 파일만 필터링
-                    const markdownFiles = prInfoService.filterMarkdownFiles(prDetails.files);
+                    // 리뷰 가능한 번역 파일 필터링 (번역 마크다운)
+                    const reviewableFiles = prInfoService.getReviewableFiles(prDetails.files);
+                    // 번역이 아닌 마크다운 파일
+                    const otherMarkdownFiles = prInfoService.filterMarkdownFiles(prDetails.files)
+                        .filter(f => !reviewableFiles.some(rf => rf.path === f.path));
 
-                    // PR의 변경된 파일들 모두 열기 (영문 파일과 함께 열지 않음)
-                    for (const file of markdownFiles) {
-                        try {
-                            const filePath = `${workspaceRoot}/${file.path}`;
-                            const fileUri = vscode.Uri.file(filePath);
-                            await vscode.commands.executeCommand('vscode.open', fileUri);
-                            openedCount++;
-                        } catch (error) {
-                            console.error(`Failed to open file ${file.path}:`, error);
-                            skippedCount++;
+                    // 리뷰 가능한 파일 + 기타 마크다운 파일을 합쳐서 QuickPick으로 선택
+                    const allFiles = [
+                        ...reviewableFiles.map(f => ({ ...f, isReviewable: true })),
+                        ...otherMarkdownFiles.map(f => ({ ...f, isReviewable: false })),
+                    ];
+
+                    if (allFiles.length === 0) {
+                        i18n.showInformationMessage('messages.pr.noFilesToOpen');
+                        return;
+                    }
+
+                    const quickPickItems = allFiles.map(file => ({
+                        label: file.path,
+                        description: file.isReviewable
+                            ? i18n.t('ui.fileStatus.translation')
+                            : i18n.t('ui.fileStatus.other'),
+                        detail: i18n.t('ui.fromPR', { number: String(prNumber), title: prDetails.title }),
+                        filePath: `${workspaceRoot}/${file.path}`,
+                        isReviewable: file.isReviewable,
+                    }));
+
+                    const selected = await vscode.window.showQuickPick(quickPickItems, {
+                        placeHolder: i18n.t('ui.selectFileToReview'),
+                        matchOnDescription: true,
+                        matchOnDetail: true,
+                    });
+
+                    if (!selected) {
+                        return;
+                    }
+
+                    try {
+                        if (selected.isReviewable) {
+                            await translationCommandManager.openFileInReviewMode(selected.filePath);
+                        } else {
+                            await vscode.commands.executeCommand('vscode.open', vscode.Uri.file(selected.filePath));
                         }
+                        openedCount = 1;
+                    } catch (error) {
+                        console.error(`Failed to open file ${selected.label}:`, error);
+                        skippedCount = 1;
                     }
 
                     i18n.showInformationMessage('messages.pr.prFetchedSuccess', {

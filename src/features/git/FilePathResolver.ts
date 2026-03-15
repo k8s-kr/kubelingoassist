@@ -1,5 +1,6 @@
 import * as path from 'path';
 import { CommitFile } from '../../core/types';
+import { getOriginalEnglishPath } from '../../core/path-utils';
 
 export interface GitChangedFile extends CommitFile {
     absPath: string;
@@ -13,12 +14,7 @@ export class FilePathResolver {
     }
 
     getOriginalEnglishPath(translationPath: string): string | null {
-        // 절대 경로 또는 상대 경로 모두 처리
-        const langMatch = translationPath.match(/content\/([^/]+)\//);
-        if (langMatch && langMatch[1] !== 'en') {
-            return translationPath.replace(`content/${langMatch[1]}/`, 'content/en/');
-        }
-        return null;
+        return getOriginalEnglishPath(translationPath);
     }
 
     filterTranslationFiles(files: CommitFile[]): GitChangedFile[] {

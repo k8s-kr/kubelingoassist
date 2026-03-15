@@ -1,6 +1,7 @@
 import * as cp from 'child_process';
 import { promisify } from 'util';
 import * as vscode from 'vscode';
+import { extractLanguageCode } from '../../core/path-utils';
 
 const exec = promisify(cp.exec);
 
@@ -520,38 +521,23 @@ export class PRInfoService {
      * @param lang - 언어 코드 ('ko', 'ja' 등) 또는 'all' (모든 번역 언어 포함), 기본값은 'all'
      */
     filterTranslationFiles(files: PRFileChange[], lang: string = 'all'): PRFileChange[] {
-        // 'all'인 경우 모든 번역 언어 포함 (en 제외)
         if (lang === 'all') {
             return files.filter(file => {
-                const path = file.path.toLowerCase();
-                // content/{lang}/ 패턴에서 en이 아닌 모든 언어 포함
-                const langMatch = path.match(/\/content\/([^/]+)\//);
-                if (langMatch) {
-                    const detectedLang = langMatch[1];
-                    // 영어 파일은 제외하고, 다른 모든 언어 포함
-                    return detectedLang !== 'en' && (
-                        path.includes(`content/${detectedLang}/`) ||
-                        path.includes(`i18n/${detectedLang}/`)
-                    );
+                const filePath = '/' + file.path.toLowerCase();
+                const detectedLang = extractLanguageCode(filePath);
+                if (detectedLang !== 'unknown' && detectedLang !== 'en') {
+                    return true;
                 }
                 // i18n/{lang}/ 패턴도 확인
-                const i18nMatch = path.match(/\/i18n\/([^/]+)\//);
-                if (i18nMatch) {
-                    const detectedLang = i18nMatch[1];
-                    return detectedLang !== 'en';
-                }
-                return false;
+                const i18nMatch = filePath.match(/\/i18n\/([^/]+)\//);
+                return i18nMatch ? i18nMatch[1] !== 'en' : false;
             });
         }
 
-        // 특정 언어만 필터링
         return files.filter(file => {
-            const path = file.path.toLowerCase();
-            // content/ko/ 또는 /content/ko/ 패턴
-            return path.includes(`content/${lang}/`) ||
-                   path.includes(`i18n/${lang}/`) ||
-                   path.includes(`/${lang}/`) || // 더 넓은 범위
-                   path.match(new RegExp(`[/_]${lang}[/_]`)); // _ko_ 또는 /ko/ 패턴
+            const filePath = file.path.toLowerCase();
+            return filePath.includes(`content/${lang}/`) ||
+                   filePath.includes(`i18n/${lang}/`);
         });
     }
 

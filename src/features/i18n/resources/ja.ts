@@ -59,6 +59,7 @@ export const ja: TranslationResource = {
       checkingOutPR: 'PR #{number}をチェックアウトしています...',
       prFetchedSuccess: 'PR #{number}: {title}\n{count}個の翻訳ファイルが見つかりました\n作成者: {author} | 状態: {state}',
       failedToFetchPRInfo: 'PR情報の取得に失敗しました: {error}',
+      noFilesToOpen: 'このPRで開くファイルがありません。',
     },
   },
 
@@ -117,9 +118,11 @@ export const ja: TranslationResource = {
     fileStatus: {
       modified: '変更済み',
       added: '追加済み',
+      translation: '翻訳',
       other: 'その他',
     },
     fromCommit: 'コミットから: {message}',
+    fromPR: 'PR #{number}から: {title}',
     statusBar: {
       translationFile: '翻訳ファイル',
       openTranslationFile: '翻訳ファイルを開く',
@@ -150,6 +153,10 @@ export const ja: TranslationResource = {
       kubelingoAssist: 'KubeLingoAssist',
       on: 'ON',
       off: 'OFF',
+    },
+    tooltip: {
+      translationGuideTitle: '翻訳用語参照',
+      translationGuideItem: 'Kubernetesローカライゼーションチーム用語集',
     },
     translationPanel: {
       modes: {

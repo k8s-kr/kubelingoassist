@@ -1,41 +1,21 @@
 import * as vscode from 'vscode';
-import * as fs from 'fs';
 import * as path from 'path';
-import { TranslationUtils } from '../features/translation/TranslationUtils';
-
-interface LinkInfo {
-    text: string;
-    path: string;
-    fullMatch: string;
-    range: vscode.Range;
-}
-
-interface ValidationResult {
-    translationExists: boolean;
-    expectedPath: string | null;
-    isFolder: boolean;
-}
+import { isTranslationFile, extractLanguageCode, getContentRoot, fileExistsSync } from '../core/path-utils';
 
 const CONSTANTS = {
-    DIAGNOSTICS_COLLECTION_NAME: 'kubelingoassist-links',
     DIAGNOSTIC_SOURCE: 'KubeLingoAssist',
     DIAGNOSTIC_CODE: 'missing-language-path',
     LINK_REGEX: /\[([^\]]*)\]\(\/docs\/([^)]*)\)/g,
-    LANGUAGE_CODE_REGEX: /^[a-z]{2}\/|^en\//,
-    TRANSLATION_FILE_PATTERN: /\/content\/([^\/]+)\/docs\//,
-    EXCLUDED_LANGUAGE: 'en'
 } as const;
 
 const MESSAGES = {
-    WARNING_TEMPLATE: (resourceType: string) =>
-        `⚠️ 번역 ${resourceType}이 존재합니다.`,
     CODE_ACTION_TITLE: (language: string) => `언어 경로 추가: /${language}/docs/...`
 } as const;
 
 export class LinkValidator {
     private diagnostics: vscode.DiagnosticCollection;
     private codeActionProvider: LinkCodeActionProvider;
-    private translationUtils = new TranslationUtils();
+    private fileExists: (filePath: string) => boolean = fileExistsSync;
 
     constructor() {
         this.diagnostics = vscode.languages.createDiagnosticCollection('kubelingoassist-links');
@@ -43,12 +23,12 @@ export class LinkValidator {
     }
 
     public validateLinks(document: vscode.TextDocument): number {
-        if (!this.isTranslationFile(document.uri.fsPath)) {
+        if (!isTranslationFile(document.uri.fsPath)) {
             this.diagnostics.delete(document.uri);
             return 0;
         }
 
-        const currentLanguage = this.translationUtils.extractLanguageCode(document.uri.fsPath);
+        const currentLanguage = extractLanguageCode(document.uri.fsPath);
         const diagnostics: vscode.Diagnostic[] = [];
         const text = document.getText();
 
@@ -108,74 +88,6 @@ export class LinkValidator {
         return diagnostics.length;
     }
 
-    private isTranslationFile(filePath: string): boolean {
-        const match = filePath.match(CONSTANTS.TRANSLATION_FILE_PATTERN);
-        return match !== null && match[1] !== CONSTANTS.EXCLUDED_LANGUAGE;
-    }
-
-    private extractLinks(document: vscode.TextDocument): LinkInfo[] {
-        const text = document.getText();
-        const links: LinkInfo[] = [];
-        const regex = new RegExp(CONSTANTS.LINK_REGEX.source, 'g');
-        let match;
-
-        while ((match = regex.exec(text)) !== null) {
-            const linkText = match[1];
-            const linkPath = match[2];
-            const fullMatch = match[0];
-            const startPos = document.positionAt(match.index!);
-            const endPos = document.positionAt(match.index! + fullMatch.length);
-            const range = new vscode.Range(startPos, endPos);
-
-            links.push({
-                text: linkText,
-                path: linkPath,
-                fullMatch,
-                range
-            });
-        }
-
-        return links;
-    }
-
-    private shouldSkipLink(linkPath: string): boolean {
-        return CONSTANTS.LANGUAGE_CODE_REGEX.test(linkPath);
-    }
-
-    private validateLink(currentFilePath: string, linkPath: string, currentLanguage: string): ValidationResult {
-        const expectedTranslationPath = this.getExpectedTranslationPath(currentFilePath, linkPath, currentLanguage);
-        const translationExists = expectedTranslationPath ? this.fileExists(expectedTranslationPath) : false;
-        const isFolder = linkPath.endsWith('/');
-
-        return {
-            translationExists,
-            expectedPath: expectedTranslationPath,
-            isFolder
-        };
-    }
-
-    private createDiagnostic(linkInfo: LinkInfo, validationResult: ValidationResult, currentLanguage: string): vscode.Diagnostic {
-        const resourceType = validationResult.isFolder ? '폴더' : '파일';
-        const message = MESSAGES.WARNING_TEMPLATE(resourceType);
-
-        const diagnostic = new vscode.Diagnostic(linkInfo.range, message, vscode.DiagnosticSeverity.Warning);
-        diagnostic.source = CONSTANTS.DIAGNOSTIC_SOURCE;
-        diagnostic.code = CONSTANTS.DIAGNOSTIC_CODE;
-
-        if (validationResult.expectedPath) {
-            const translationFilePath = this.resolveTranslationFilePath(validationResult.expectedPath, validationResult.isFolder);
-            const translationUri = vscode.Uri.file(translationFilePath);
-            diagnostic.relatedInformation = [
-                new vscode.DiagnosticRelatedInformation(
-                    new vscode.Location(translationUri, new vscode.Position(0, 0)),
-                    `/${currentLanguage.toLowerCase()}/docs/${linkInfo.path}`
-                )
-            ];
-        }
-
-        return diagnostic;
-    }
-
     public dispose() {
         this.diagnostics.dispose();
         this.codeActionProvider.dispose();
@@ -211,12 +123,10 @@ export class LinkValidator {
 
     private getExpectedTranslationPath(currentFilePath: string, linkPath: string, language: string): string | null {
         try {
-            const contentMatch = currentFilePath.match(/(.*\/content)\/[^/]+\/docs\//);
-            if (!contentMatch) {
+            const contentRoot = getContentRoot(currentFilePath);
+            if (!contentRoot) {
                 return null;
             }
-
-            const contentRoot = contentMatch[1];
             let expectedPath = path.join(contentRoot, language.toLowerCase(), 'docs', linkPath);
             
             if (linkPath.endsWith('/')) {
@@ -234,29 +144,10 @@ export class LinkValidator {
         }
     }
 
-    private fileExists(filePath: string): boolean {
-        try {
-            if (!fs.existsSync(filePath)) {
-                return false;
-            }
-            
-            const stats = fs.statSync(filePath);
-            
-            if (filePath.endsWith('/')) {
-                return stats.isDirectory();
-            }
-            
-            return stats.isFile();
-        } catch (error) {
-            console.warn(`Failed to check file existence for ${filePath}:`, error);
-            return false;
-        }
-    }
 }
 
 export class LinkCodeActionProvider implements vscode.CodeActionProvider {
     private disposables: vscode.Disposable[] = [];
-    private translationUtils = new TranslationUtils();
 
     constructor() {
         // Register the code action provider for markdown files
@@ -307,7 +198,7 @@ export class LinkCodeActionProvider implements vscode.CodeActionProvider {
 
             const linkText = match[1];
             const linkPath = match[2];
-            const currentLanguage = this.translationUtils.extractLanguageCode(document.uri.fsPath);
+            const currentLanguage = extractLanguageCode(document.uri.fsPath);
 
             if (currentLanguage === 'unknown') {
                 return undefined;

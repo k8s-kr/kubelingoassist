@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { i18n, LANGUAGE_NAMES, SUPPORTED_LANGUAGES, LANGUAGE_OPTIONS, LanguageInfo } from '../i18n';
+import { extractLanguageCode as _extractLanguageCode, getOriginalEnglishPath, CONTENT_LANG_REGEX } from '../../core/path-utils';
 
 /**
  * 번역 진행률 정보를 나타내는 인터페이스입니다.
@@ -123,8 +124,7 @@ export class TranslationUtils {
      * @returns 언어 코드 또는 'unknown'
      */
     extractLanguageCode(filePath: string): string {
-        const langMatch = filePath.match(/\/content\/([^/]+)\//); 
-        return langMatch ? langMatch[1] : 'unknown';
+        return _extractLanguageCode(filePath);
     }
 
     /**
@@ -184,20 +184,18 @@ export class TranslationUtils {
     }
 
     private getEnglishPathFromTranslation(normalizedPath: string): string | null {
-        const langMatch = normalizedPath.match(/\/content\/([^/]+)\//); 
-        if (langMatch && langMatch[1] !== 'en') {
-            const detectedLang = langMatch[1];
-            
-            if (!SUPPORTED_LANGUAGES.includes(detectedLang as any)) {
-                console.warn(`Unsupported language code: ${detectedLang}`);
-                return null;
-            }
-            
-            return normalizedPath.replace(`/content/${detectedLang}/`, '/content/en/');
+        const langCode = _extractLanguageCode(normalizedPath);
+        if (langCode === 'unknown' || langCode === 'en') {
+            console.warn('Path does not match expected content structure');
+            return null;
         }
-        
-        console.warn('Path does not match expected content structure');
-        return null;
+
+        if (!SUPPORTED_LANGUAGES.includes(langCode as any)) {
+            console.warn(`Unsupported language code: ${langCode}`);
+            return null;
+        }
+
+        return getOriginalEnglishPath(normalizedPath);
     }
 
     private async openFilesInSplitView(originalPath: string, translationPath: string): Promise<void> {
@@ -323,35 +321,4 @@ export class TranslationUtils {
             percentage: originalLines > 0 ? Math.round((translationLines / originalLines) * 100) : 0
         };
     }
-}
-
-// 기존 함수들을 유지 (하위 호환성)
-const translationUtils = new TranslationUtils();
-
-export async function getTranslationPath(filePath: string): Promise<string | null> {
-    return await translationUtils.getTranslationPath(filePath);
-}
-
-export async function selectTargetLanguage(): Promise<string | null> {
-    return await translationUtils.selectTargetLanguage();
-}
-
-export async function openSplitView(originalPath: string, translationPath: string): Promise<void> {
-    return await translationUtils.openSplitView(originalPath, translationPath);
-}
-
-export async function createTranslationFile(originalPath: string, translationPath: string): Promise<void> {
-    return await translationUtils.createTranslationFile(originalPath, translationPath);
-}
-
-export function extractLanguage(filePath: string): string {
-    return translationUtils.extractLanguage(filePath);
-}
-
-export function extractLanguageCode(filePath: string): string {
-    return translationUtils.extractLanguageCode(filePath);
-}
-
-export async function compareLineCounts(originalPath: string, translationPath: string): Promise<FileTranslationProgress | null> {
-    return await translationUtils.compareLineCounts(originalPath, translationPath);
 }
