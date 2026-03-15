@@ -10,13 +10,13 @@ import './integration.test';
 import './edge-cases.test';
 
 suite('KubeLingoAssist Extension Test Suite', () => {
-    vscode.window.showInformationMessage(i18n.t('ui.test.startingTests'));
-    
-    // All individual test suites are automatically loaded via imports above
-    // This main test suite serves as the entry point and orchestrator
-    
-    test('Test suite initialization', () => {
-        // This test ensures the test suite loads correctly
-        // Individual functionality tests are in their respective files
-    });
+  vscode.window.showInformationMessage(i18n.t('ui.test.startingTests'));
+
+  // All individual test suites are automatically loaded via imports above
+  // This main test suite serves as the entry point and orchestrator
+
+  test('Test suite initialization', () => {
+    // This test ensures the test suite loads correctly
+    // Individual functionality tests are in their respective files
+  });
 });

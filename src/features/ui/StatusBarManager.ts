@@ -11,7 +11,10 @@ export class StatusBarManager {
   private translationUtils = new TranslationUtils();
 
   constructor() {
-    this.languageStatusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 99);
+    this.languageStatusBarItem = vscode.window.createStatusBarItem(
+      vscode.StatusBarAlignment.Right,
+      99
+    );
     this.languageStatusBarItem.command = 'kubelingoassist.openTranslationFile';
     this.languageStatusBarItem.text = `$(globe) ${i18n.t('ui.statusBar.translationFile')}`;
     this.languageStatusBarItem.tooltip = i18n.t('ui.statusBar.openTranslationFile');
@@ -26,12 +29,18 @@ export class StatusBarManager {
       const sourceLanguage = this.translationUtils.extractLanguageCode(originalPath);
       const targetLanguage = this.translationUtils.extractLanguageCode(translationPath);
 
-      const lineComparison = await this.translationUtils.compareLineCounts(originalPath, translationPath);
+      const lineComparison = await this.translationUtils.compareLineCounts(
+        originalPath,
+        translationPath
+      );
       let lineInfo = '';
 
       if (lineComparison) {
-        if (lineComparison.isEqual) lineInfo = ' ✓';
-        else lineInfo = ` (${lineComparison.percentage}%)`;
+        if (lineComparison.isEqual) {
+          lineInfo = ' ✓';
+        } else {
+          lineInfo = ` (${lineComparison.percentage}%)`;
+        }
       }
 
       this.languageStatusBarItem.text = `$(globe) ${sourceLanguage} → ${targetLanguage}${lineInfo}`;
@@ -39,7 +48,7 @@ export class StatusBarManager {
         ? i18n.t('ui.statusBar.lineComparison', {
             originalLines: lineComparison.originalLines.toString(),
             translationLines: lineComparison.translationLines.toString(),
-            percentage: lineComparison.percentage.toString()
+            percentage: lineComparison.percentage.toString(),
           })
         : i18n.t('ui.statusBar.openTranslationFile');
     } else {
@@ -64,12 +73,11 @@ export class StatusBarManager {
     if (this.updateTimeout) {
       clearTimeout(this.updateTimeout);
     }
-    
+
     this.updateTimeout = setTimeout(async () => {
       await this.refreshLineCount();
     }, delay);
   }
-
 
   public dispose() {
     if (this.updateTimeout) {

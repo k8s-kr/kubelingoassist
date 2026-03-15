@@ -24,32 +24,40 @@ export const en: TranslationResource = {
     enableKubelingoFirst: 'Please enable KubelingoAssist first.',
     noActiveFile: 'No active file found.',
     invalidFilePath: 'File path is not valid.',
-    cannotFindTranslationPath: 'Cannot find translation file path. This extension works with Kubernetes documentation repository\'s /content/en/ or /content/{language}/ structure.',
-    splitViewOpened: 'Files opened in split view. Use Cmd+Shift+Z to enable scroll synchronization.',
+    cannotFindTranslationPath:
+      "Cannot find translation file path. This extension works with Kubernetes documentation repository's /content/en/ or /content/{language}/ structure.",
+    splitViewOpened:
+      'Files opened in split view. Use Cmd+Shift+Z to enable scroll synchronization.',
     syncScrollEnabled: 'Synchronized scrolling enabled.',
     syncScrollDisabled: 'Synchronized scrolling disabled.',
     kubelingoEnabled: 'KubelingoAssist enabled.',
     kubelingoDisabledMsg: 'KubelingoAssist disabled.',
     reviewModeEnabled: 'Review mode enabled. You can now see changed files from recent commits.',
     translationModeEnabled: 'Translation mode enabled.',
-    translationFileNotExists: 'Translation file does not exist. Would you like to create a new one?',
+    translationFileNotExists:
+      'Translation file does not exist. Would you like to create a new one?',
     createNewFile: 'Create new file?',
-    fileAlreadyExists: 'Translation file already exists: {filename}\nWould you like to overwrite it?',
+    fileAlreadyExists:
+      'Translation file already exists: {filename}\nWould you like to overwrite it?',
     fileCopied: 'File copied successfully. Start translating!',
     fileCopyFailed: 'File copy failed: {error}',
     originalFileNotFound: 'Original file not found: {path}',
     gitUtilitiesNotAvailable: 'Git utilities not available',
     noRecentCommits: 'No recent commits found',
-    noTranslationFilesFound: 'No translation files found in recent commits. This extension works with Kubernetes documentation repositories that have content/{language} structure. Make sure you have committed some translated markdown files in the expected directory structure.',
+    noTranslationFilesFound:
+      'No translation files found in recent commits. This extension works with Kubernetes documentation repositories that have content/{language} structure. Make sure you have committed some translated markdown files in the expected directory structure.',
     openedForReview: 'Opened {path} with original English file for review',
     failedToOpenReviewMode: 'Failed to open file in review mode: {error}',
     failedToGetRecentCommits: 'Failed to get recent commits: {error}',
     couldNotDetermineOriginalPath: 'Could not determine original English file path',
-    reviewFileNotTranslationFile: 'Current file is not a translation file. Please open a translation file (content/{language}/).',
+    reviewFileNotTranslationFile:
+      'Current file is not a translation file. Please open a translation file (content/{language}/).',
     couldNotFindEnglishFile: 'Could not find English original file path.',
     englishFileNotFound: 'English original file not found: {path}',
-    notKubernetesRepo: 'This extension only works with the Kubernetes documentation repository (kubernetes/website). Please open the kubernetes/website repository to use translation features.',
-    kubernetesRepoOnly: 'This extension only works with the Kubernetes documentation repository (kubernetes/website). Please open the kubernetes/website repository to use review mode.',
+    notKubernetesRepo:
+      'This extension only works with the Kubernetes documentation repository (kubernetes/website). Please open the kubernetes/website repository to use translation features.',
+    kubernetesRepoOnly:
+      'This extension only works with the Kubernetes documentation repository (kubernetes/website). Please open the kubernetes/website repository to use review mode.',
     pr: {
       enterPRNumber: 'Enter PR number',
       enterValidPRNumber: 'Please enter a valid PR number',
@@ -57,8 +65,10 @@ export const en: TranslationResource = {
       failedToFetchPR: 'Failed to fetch PR #{number}',
       noTranslationFilesInPR: 'PR #{number}: {title}\nNo translation files found in this PR.',
       checkingOutPR: 'Checking out PR #{number}...',
-      prFetchedSuccess: 'PR #{number}: {title}\nFound {count} translation file(s)\nAuthor: {author} | State: {state}',
+      prFetchedSuccess:
+        'PR #{number}: {title}\nFound {count} translation file(s)\nAuthor: {author} | State: {state}',
       failedToFetchPRInfo: 'Failed to fetch PR info: {error}',
+      noFilesToOpen: 'No files to open in this PR.',
     },
   },
 
@@ -81,7 +91,8 @@ export const en: TranslationResource = {
       storageLimit: 'Storage limit reached.',
       unsavedChanges: 'You have unsaved changes.',
       deleteApiKey: 'Delete {provider} API Key?',
-      insufficientTranslationFiles: 'Insufficient translation files for synchronization. Please open both original and translation files.',
+      insufficientTranslationFiles:
+        'Insufficient translation files for synchronization. Please open both original and translation files.',
     },
     error: {
       configurationError: 'Configuration error occurred.',
@@ -117,17 +128,21 @@ export const en: TranslationResource = {
     fileStatus: {
       modified: 'Modified',
       added: 'Added',
+      translation: 'Translation',
       other: 'Other',
     },
     fromCommit: 'From commit: {message}',
+    fromPR: 'From PR #{number}: {title}',
     statusBar: {
       translationFile: 'Translation File',
       openTranslationFile: 'Open Translation File',
-      lineComparison: 'Original: {originalLines} lines, Translation: {translationLines} lines ({percentage}%)',
+      lineComparison:
+        'Original: {originalLines} lines, Translation: {translationLines} lines ({percentage}%)',
       autoRefreshLineCount: 'Automatically update line count for currently open files',
     },
     aiConfig: {
-      currentProviderSelect: 'Current provider: {currentProvider}. Select API provider to configure:',
+      currentProviderSelect:
+        'Current provider: {currentProvider}. Select API provider to configure:',
       enterApiKey: 'Enter your {provider} API Key',
       apiKeyStorageNote: 'API Key will be stored securely in VS Code Secret Storage',
       configuredStatus: '✓ Configured',
@@ -150,6 +165,10 @@ export const en: TranslationResource = {
       kubelingoAssist: 'KubeLingoAssist',
       on: 'ON',
       off: 'OFF',
+    },
+    tooltip: {
+      translationGuideTitle: 'Translation Glossary',
+      translationGuideItem: 'Kubernetes Localization Team Glossary',
     },
     translationPanel: {
       modes: {

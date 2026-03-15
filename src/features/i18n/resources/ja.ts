@@ -24,13 +24,16 @@ export const ja: TranslationResource = {
     enableKubelingoFirst: '最初にKubelingoAssistを有効にしてください。',
     noActiveFile: 'アクティブなファイルが見つかりません。',
     invalidFilePath: 'ファイルパスが存在しません。',
-    cannotFindTranslationPath: '翻訳ファイルパスが見つかりません。この機能はKubernetesドキュメントリポジトリの /content/en/ または /content/{language}/ 構造で動作します。',
-    splitViewOpened: 'ファイルが分割表示で開かれました。Cmd+Shift+Zでスクロール同期を有効にできます。',
+    cannotFindTranslationPath:
+      '翻訳ファイルパスが見つかりません。この機能はKubernetesドキュメントリポジトリの /content/en/ または /content/{language}/ 構造で動作します。',
+    splitViewOpened:
+      'ファイルが分割表示で開かれました。Cmd+Shift+Zでスクロール同期を有効にできます。',
     syncScrollEnabled: '同期スクロールが有効になりました。',
     syncScrollDisabled: '同期スクロールが無効になりました。',
     kubelingoEnabled: 'KubelingoAssistが有効になりました。',
     kubelingoDisabledMsg: 'KubelingoAssistが無効になりました。',
-    reviewModeEnabled: 'レビューモードが有効になりました。最近のコミットから変更されたファイルを確認できます。',
+    reviewModeEnabled:
+      'レビューモードが有効になりました。最近のコミットから変更されたファイルを確認できます。',
     translationModeEnabled: '翻訳モードが有効になりました。',
     translationFileNotExists: '翻訳ファイルが存在しません。新しいファイルを作成しますか？',
     createNewFile: '新しいファイルを作成しますか？',
@@ -40,16 +43,20 @@ export const ja: TranslationResource = {
     originalFileNotFound: '元ファイルが見つかりません: {path}',
     gitUtilitiesNotAvailable: 'Gitユーティリティが利用できません。',
     noRecentCommits: '最近のコミットが見つかりません。',
-    noTranslationFilesFound: '最近のコミットで翻訳ファイルが見つかりません。この機能は content/{language} 構造を持つKubernetesドキュメントリポジトリで動作します。期待されるディレクトリ構造で翻訳されたマークダウンファイルをコミットしていることを確認してください。',
+    noTranslationFilesFound:
+      '最近のコミットで翻訳ファイルが見つかりません。この機能は content/{language} 構造を持つKubernetesドキュメントリポジトリで動作します。期待されるディレクトリ構造で翻訳されたマークダウンファイルをコミットしていることを確認してください。',
     openedForReview: 'レビュー用に {path} を元の英語ファイルと共に開きました',
     failedToOpenReviewMode: 'レビューモードでファイルを開くのに失敗しました: {error}',
     failedToGetRecentCommits: '最近のコミットの取得に失敗しました: {error}',
     couldNotDetermineOriginalPath: '元の英語ファイルパスを特定できませんでした',
-    reviewFileNotTranslationFile: '現在のファイルは翻訳ファイルではありません。翻訳ファイル(content/{言語}/)を開いてください。',
+    reviewFileNotTranslationFile:
+      '現在のファイルは翻訳ファイルではありません。翻訳ファイル(content/{言語}/)を開いてください。',
     couldNotFindEnglishFile: '英語の元ファイルパスが見つかりませんでした。',
     englishFileNotFound: '英語の元ファイルが見つかりません: {path}',
-    notKubernetesRepo: 'この機能はKubernetesドキュメントリポジトリ (kubernetes/website) で動作します。翻訳機能を使用するには kubernetes/website リポジトリを開いてください。',
-    kubernetesRepoOnly: 'この機能はKubernetesドキュメントリポジトリ (kubernetes/website) で動作します。レビューモードを使用するには kubernetes/website リポジトリを開いてください。',
+    notKubernetesRepo:
+      'この機能はKubernetesドキュメントリポジトリ (kubernetes/website) で動作します。翻訳機能を使用するには kubernetes/website リポジトリを開いてください。',
+    kubernetesRepoOnly:
+      'この機能はKubernetesドキュメントリポジトリ (kubernetes/website) で動作します。レビューモードを使用するには kubernetes/website リポジトリを開いてください。',
     pr: {
       enterPRNumber: 'PR番号を入力してください',
       enterValidPRNumber: '有効なPR番号を入力してください',
@@ -57,8 +64,10 @@ export const ja: TranslationResource = {
       failedToFetchPR: 'PR #{number}の取得に失敗しました',
       noTranslationFilesInPR: 'PR #{number}: {title}\nこのPRで翻訳ファイルが見つかりませんでした。',
       checkingOutPR: 'PR #{number}をチェックアウトしています...',
-      prFetchedSuccess: 'PR #{number}: {title}\n{count}個の翻訳ファイルが見つかりました\n作成者: {author} | 状態: {state}',
+      prFetchedSuccess:
+        'PR #{number}: {title}\n{count}個の翻訳ファイルが見つかりました\n作成者: {author} | 状態: {state}',
       failedToFetchPRInfo: 'PR情報の取得に失敗しました: {error}',
+      noFilesToOpen: 'このPRで開くファイルがありません。',
     },
   },
 
@@ -81,7 +90,8 @@ export const ja: TranslationResource = {
       storageLimit: 'ストレージ制限に達しました。',
       unsavedChanges: '未保存の変更があります。',
       deleteApiKey: '{provider} APIキーを削除しますか？',
-      insufficientTranslationFiles: '同期に十分な翻訳ファイルがありません。元ファイルと翻訳ファイルの両方を開いてください。',
+      insufficientTranslationFiles:
+        '同期に十分な翻訳ファイルがありません。元ファイルと翻訳ファイルの両方を開いてください。',
     },
     error: {
       configurationError: '設定エラーが発生しました。',
@@ -117,9 +127,11 @@ export const ja: TranslationResource = {
     fileStatus: {
       modified: '変更済み',
       added: '追加済み',
+      translation: '翻訳',
       other: 'その他',
     },
     fromCommit: 'コミットから: {message}',
+    fromPR: 'PR #{number}から: {title}',
     statusBar: {
       translationFile: '翻訳ファイル',
       openTranslationFile: '翻訳ファイルを開く',
@@ -127,7 +139,8 @@ export const ja: TranslationResource = {
       autoRefreshLineCount: '現在開いているファイルの行数を自動更新',
     },
     aiConfig: {
-      currentProviderSelect: '現在のプロバイダー: {currentProvider}。設定するAPIプロバイダーを選択してください:',
+      currentProviderSelect:
+        '現在のプロバイダー: {currentProvider}。設定するAPIプロバイダーを選択してください:',
       enterApiKey: '{provider} APIキーを入力してください',
       apiKeyStorageNote: 'APIキーはVS Codeセキュアストレージに安全に保存されます',
       configuredStatus: '✓ 設定済み',
@@ -150,6 +163,10 @@ export const ja: TranslationResource = {
       kubelingoAssist: 'KubeLingoAssist',
       on: 'ON',
       off: 'OFF',
+    },
+    tooltip: {
+      translationGuideTitle: '翻訳用語参照',
+      translationGuideItem: 'Kubernetesローカライゼーションチーム用語集',
     },
     translationPanel: {
       modes: {
