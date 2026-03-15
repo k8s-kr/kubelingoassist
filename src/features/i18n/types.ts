@@ -68,6 +68,7 @@ export interface TranslationKeys {
       checkingOutPR: string;
       prFetchedSuccess: string;
       failedToFetchPRInfo: string;
+      noFilesToOpen: string;
     };
   };
 
@@ -128,9 +129,11 @@ export interface TranslationKeys {
     fileStatus: {
       modified: string;
       added: string;
+      translation: string;
       other: string;
     };
     fromCommit: string;
+    fromPR: string;
     statusBar: {
       translationFile: string;
       openTranslationFile: string;
@@ -149,6 +152,10 @@ export interface TranslationKeys {
     };
     test: {
       startingTests: string;
+    };
+    tooltip: {
+      translationGuideTitle: string;
+      translationGuideItem: string;
     };
     accessibility: {
       translationModeSelector: string;
@@ -201,58 +208,65 @@ export type TranslationResource = TranslationKeys;
  * 언어 정보를 나타내는 인터페이스입니다.
  */
 export interface LanguageInfo {
-    label: string;
-    value: string;
+  label: string;
+  value: string;
 }
 
 /**
  * 지원되는 언어 코드와 언어명 매핑입니다.
  */
 
-
 /**
  * 지원되는 언어 코드 배열입니다.
  */
-export const SUPPORTED_LANGUAGES: SupportedLanguage[] = ['en', 'ko', 'ja', 'zh-cn', 'zh', 'fr', 'de', 'es'];
+export const SUPPORTED_LANGUAGES: SupportedLanguage[] = [
+  'en',
+  'ko',
+  'ja',
+  'zh-cn',
+  'zh',
+  'fr',
+  'de',
+  'es',
+];
 
 /**
  * 언어 선택을 위한 옵션 배열입니다.
  */
 
-
 export const LANGUAGE_NAMES: { [key: string]: string } = {
-        'en': 'English',
-        'ko': '한국어',
-        'ja': '日本語',
-        'zh-cn': '中文(简体)',
-        'zh': '中文(繁体)',
-        'fr': 'Français',
-        'de': 'Deutsch',
-        'es': 'Español',
-        'it': 'Italiano',
-        'pt-br': 'Português',
-        'ru': 'Русский',
-        'uk': 'Українська',
-        'pl': 'Polski',
-        'hi': 'हिन्दी',
-        'vi': 'Việt Nam',
-        'id': 'Indonesia'
-    };
+  en: 'English',
+  ko: '한국어',
+  ja: '日本語',
+  'zh-cn': '中文(简体)',
+  zh: '中文(繁体)',
+  fr: 'Français',
+  de: 'Deutsch',
+  es: 'Español',
+  it: 'Italiano',
+  'pt-br': 'Português',
+  ru: 'Русский',
+  uk: 'Українська',
+  pl: 'Polski',
+  hi: 'हिन्दी',
+  vi: 'Việt Nam',
+  id: 'Indonesia',
+};
 
 export const LANGUAGE_OPTIONS: LanguageInfo[] = [
-        { label: '한국어 (ko)', value: 'ko' },
-        { label: '日本語 (ja)', value: 'ja' },
-        { label: '中文 (zh-cn)', value: 'zh-cn' },
-        { label: '中文 (zh)', value: 'zh' },
-        { label: 'Français (fr)', value: 'fr' },
-        { label: 'Deutsch (de)', value: 'de' },
-        { label: 'Español (es)', value: 'es' },
-        { label: 'Italiano (it)', value: 'it' },
-        { label: 'Português (pt-br)', value: 'pt-br' },
-        { label: 'Русский (ru)', value: 'ru' },
-        { label: 'Українська (uk)', value: 'uk' },
-        { label: 'Polski (pl)', value: 'pl' },
-        { label: 'हिन्दी (hi)', value: 'hi' },
-        { label: 'Việt Nam (vi)', value: 'vi' },
-        { label: 'Indonesia (id)', value: 'id' }
-    ];
+  { label: '한국어 (ko)', value: 'ko' },
+  { label: '日本語 (ja)', value: 'ja' },
+  { label: '中文 (zh-cn)', value: 'zh-cn' },
+  { label: '中文 (zh)', value: 'zh' },
+  { label: 'Français (fr)', value: 'fr' },
+  { label: 'Deutsch (de)', value: 'de' },
+  { label: 'Español (es)', value: 'es' },
+  { label: 'Italiano (it)', value: 'it' },
+  { label: 'Português (pt-br)', value: 'pt-br' },
+  { label: 'Русский (ru)', value: 'ru' },
+  { label: 'Українська (uk)', value: 'uk' },
+  { label: 'Polski (pl)', value: 'pl' },
+  { label: 'हिन्दी (hi)', value: 'hi' },
+  { label: 'Việt Nam (vi)', value: 'vi' },
+  { label: 'Indonesia (id)', value: 'id' },
+];
