@@ -176,7 +176,7 @@ Another [valid link too](/docs/reference/guide) - should also work`;
       vscode.DiagnosticSeverity.Warning
     );
     mockDiagnostic.source = 'KubeLingoAssist';
-    mockDiagnostic.code = 'missing-language-path';
+    mockDiagnostic.code = 'translation-available';
     // No relatedInformation → should return undefined
 
     const action = (codeActionProvider as any).createOpenTranslationFileAction(

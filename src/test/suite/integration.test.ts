@@ -138,7 +138,7 @@ This [already fixed link](/ko/docs/concepts/overview) should be ignored.`;
     );
     assert.strictEqual(
       diagnostic.code,
-      'missing-language-path',
+      'translation-available',
       'Diagnostic should have correct code'
     );
 

@@ -132,7 +132,7 @@ suite('LinkCodeActionProvider Unit Tests', () => {
 
     // Set proper source and code for first diagnostic
     mockDiagnostics[0].source = 'KubeLingoAssist';
-    mockDiagnostics[0].code = 'missing-language-path';
+    mockDiagnostics[0].code = 'translation-available';
 
     // Second diagnostic has different source
     mockDiagnostics[1].source = 'TypeScript';
@@ -142,7 +142,7 @@ suite('LinkCodeActionProvider Unit Tests', () => {
 
     assert.strictEqual(filtered.length, 1);
     assert.strictEqual(filtered[0].source, 'KubeLingoAssist');
-    assert.strictEqual(filtered[0].code, 'missing-language-path');
+    assert.strictEqual(filtered[0].code, 'translation-available');
   });
 
   test('should create code action for valid link diagnostic', () => {
@@ -154,11 +154,11 @@ suite('LinkCodeActionProvider Unit Tests', () => {
     const translationUri = vscode.Uri.file('/content/ko/docs/concepts/overview.md');
     const mockDiagnostic = new vscode.Diagnostic(
       new vscode.Range(0, 0, 0, 35),
-      '번역 파일이 존재합니다: 개요',
+      '번역 문서: 개요',
       vscode.DiagnosticSeverity.Warning
     );
     mockDiagnostic.source = 'KubeLingoAssist';
-    mockDiagnostic.code = 'missing-language-path';
+    mockDiagnostic.code = 'translation-available';
     mockDiagnostic.relatedInformation = [
       new vscode.DiagnosticRelatedInformation(
         new vscode.Location(translationUri, new vscode.Position(0, 0)),
@@ -209,11 +209,11 @@ suite('LinkCodeActionProvider Unit Tests', () => {
     const translationUri = vscode.Uri.file('/content/ko/docs/overview.md');
     const mockDiagnostic = new vscode.Diagnostic(
       new vscode.Range(0, 0, 0, 20),
-      '번역 파일이 존재합니다: overview',
+      '번역 문서: overview',
       vscode.DiagnosticSeverity.Warning
     );
     mockDiagnostic.source = 'KubeLingoAssist';
-    mockDiagnostic.code = 'missing-language-path';
+    mockDiagnostic.code = 'translation-available';
     mockDiagnostic.relatedInformation = [
       new vscode.DiagnosticRelatedInformation(
         new vscode.Location(translationUri, new vscode.Position(0, 0)),

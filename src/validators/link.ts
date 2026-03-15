@@ -10,7 +10,7 @@ import {
 
 const CONSTANTS = {
   DIAGNOSTIC_SOURCE: 'KubeLingoAssist',
-  DIAGNOSTIC_CODE: 'missing-language-path',
+  DIAGNOSTIC_CODE: 'translation-available',
   LINK_REGEX: /\[([^\]]*)\]\(\/(?:([a-z]{2}(?:-[a-z]{2})?)\/)?docs\/([^)]*)\)/g,
 } as const;
 
@@ -56,7 +56,7 @@ export class LinkValidator {
     const diagnostics: vscode.Diagnostic[] = [];
     const text = document.getText();
 
-    const linkRegex = /\[([^\]]*)\]\(\/(?:([a-z]{2}(?:-[a-z]{2})?)\/)?docs\/([^)]*)\)/g;
+    const linkRegex = new RegExp(CONSTANTS.LINK_REGEX.source, 'g');
     let match;
 
     while ((match = linkRegex.exec(text)) !== null) {
@@ -102,10 +102,14 @@ export class LinkValidator {
         );
         const title = this.readTitle(translationFilePath);
         const displayTitle = title ?? linkPath;
-        const message = `번역 파일이 존재합니다: ${displayTitle}`;
-        const diagnostic = new vscode.Diagnostic(range, message, vscode.DiagnosticSeverity.Warning);
+        const message = `번역 문서: ${displayTitle}`;
+        const diagnostic = new vscode.Diagnostic(
+          range,
+          message,
+          vscode.DiagnosticSeverity.Information
+        );
         diagnostic.source = 'KubeLingoAssist';
-        diagnostic.code = 'missing-language-path';
+        diagnostic.code = 'translation-available';
         const translationUri = vscode.Uri.file(translationFilePath);
         diagnostic.relatedInformation = [
           new vscode.DiagnosticRelatedInformation(
@@ -229,7 +233,7 @@ export class LinkCodeActionProvider implements vscode.CodeActionProvider {
       }
 
       const translationUri = relatedInfo[0].location.uri;
-      const displayTitle = diagnostic.message.replace('번역 파일이 존재합니다: ', '');
+      const displayTitle = diagnostic.message.replace('번역 문서: ', '');
       const title = MESSAGES.CODE_ACTION_TITLE(displayTitle);
 
       const action = new vscode.CodeAction(title, vscode.CodeActionKind.QuickFix);
