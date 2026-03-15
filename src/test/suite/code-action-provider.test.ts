@@ -29,7 +29,7 @@ suite('LinkCodeActionProvider Unit Tests', () => {
 
     // Set proper source and code for first diagnostic
     mockDiagnostics[0].source = 'KubeLingoAssist';
-    mockDiagnostics[0].code = 'missing-language-path';
+    mockDiagnostics[0].code = 'translation-available';
 
     // Second diagnostic has different source
     mockDiagnostics[1].source = 'TypeScript';
@@ -39,7 +39,7 @@ suite('LinkCodeActionProvider Unit Tests', () => {
 
     assert.strictEqual(filtered.length, 1);
     assert.strictEqual(filtered[0].source, 'KubeLingoAssist');
-    assert.strictEqual(filtered[0].code, 'missing-language-path');
+    assert.strictEqual(filtered[0].code, 'translation-available');
   });
 
   test('should create code action for valid link diagnostic', () => {
@@ -48,28 +48,36 @@ suite('LinkCodeActionProvider Unit Tests', () => {
       uri: vscode.Uri.file('/content/ko/docs/test.md'),
     } as vscode.TextDocument;
 
+    const translationUri = vscode.Uri.file('/content/ko/docs/concepts/overview.md');
     const mockDiagnostic = new vscode.Diagnostic(
       new vscode.Range(0, 0, 0, 35),
-      'Missing language path',
+      '번역 문서: 개요',
       vscode.DiagnosticSeverity.Warning
     );
     mockDiagnostic.source = 'KubeLingoAssist';
-    mockDiagnostic.code = 'missing-language-path';
+    mockDiagnostic.code = 'translation-available';
+    mockDiagnostic.relatedInformation = [
+      new vscode.DiagnosticRelatedInformation(
+        new vscode.Location(translationUri, new vscode.Position(0, 0)),
+        '/ko/docs/concepts/overview'
+      ),
+    ];
 
-    const action = (codeActionProvider as any).createFixLanguagePathAction(
+    const action = (codeActionProvider as any).createOpenTranslationFileAction(
       mockDocument,
       mockDiagnostic
     );
 
     assert.notStrictEqual(action, undefined);
-    assert.ok(action.title.includes('ko'));
+    assert.ok(action.title.includes('개요'));
     assert.strictEqual(action.kind, vscode.CodeActionKind.QuickFix);
     assert.strictEqual(action.isPreferred, true);
     assert.strictEqual(action.diagnostics?.length, 1);
-    assert.ok(action.edit);
+    assert.ok(action.command);
+    assert.strictEqual(action.command.command, 'vscode.open');
   });
 
-  test('should return undefined for invalid diagnostic text', () => {
+  test('should return undefined for diagnostic without relatedInformation', () => {
     const mockDocument = {
       getText: (_range: vscode.Range) => 'invalid text without link pattern',
       uri: vscode.Uri.file('/content/ko/docs/test.md'),
@@ -81,7 +89,7 @@ suite('LinkCodeActionProvider Unit Tests', () => {
       vscode.DiagnosticSeverity.Warning
     );
 
-    const action = (codeActionProvider as any).createFixLanguagePathAction(
+    const action = (codeActionProvider as any).createOpenTranslationFileAction(
       mockDocument,
       mockDiagnostic
     );
@@ -95,13 +103,20 @@ suite('LinkCodeActionProvider Unit Tests', () => {
       uri: vscode.Uri.file('/content/ko/docs/test.md'),
     } as vscode.TextDocument;
 
+    const translationUri = vscode.Uri.file('/content/ko/docs/overview.md');
     const mockDiagnostic = new vscode.Diagnostic(
       new vscode.Range(0, 0, 0, 20),
-      'Missing language path',
+      '번역 문서: overview',
       vscode.DiagnosticSeverity.Warning
     );
     mockDiagnostic.source = 'KubeLingoAssist';
-    mockDiagnostic.code = 'missing-language-path';
+    mockDiagnostic.code = 'translation-available';
+    mockDiagnostic.relatedInformation = [
+      new vscode.DiagnosticRelatedInformation(
+        new vscode.Location(translationUri, new vscode.Position(0, 0)),
+        '/ko/docs/overview'
+      ),
+    ];
 
     const mockContext = {
       diagnostics: [mockDiagnostic],
@@ -137,12 +152,13 @@ suite('LinkCodeActionProvider Unit Tests', () => {
       vscode.DiagnosticSeverity.Warning
     );
     mockDiagnostic.source = 'KubeLingoAssist';
-    mockDiagnostic.code = 'missing-language-path';
+    mockDiagnostic.code = 'translation-available';
+    // No relatedInformation → should return undefined
 
-    const action = (codeActionProvider as any).createFixLanguagePathAction(
+    const action = (codeActionProvider as any).createOpenTranslationFileAction(
       mockDocument,
       mockDiagnostic
     );
-    assert.strictEqual(action, undefined, 'Should return undefined when error occurs');
+    assert.strictEqual(action, undefined, 'Should return undefined when no relatedInformation');
   });
 });

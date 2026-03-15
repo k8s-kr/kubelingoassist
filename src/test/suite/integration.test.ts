@@ -60,8 +60,8 @@ This [already fixed link](/ko/docs/concepts/overview) should be ignored.`;
     assert.strictEqual(actions.length, 1, 'Should provide one code action');
 
     const action = actions[0];
-    assert.ok(action.edit, 'Code action should have edit');
-    assert.ok(action.edit.has(mockDocument.uri), 'Edit should target correct document');
+    assert.ok(action.command, 'Code action should have command');
+    assert.strictEqual(action.command!.command, 'vscode.open', 'Command should open file');
 
     // Restore original method
     (linkValidator as any).fileExists = originalFileExists;
@@ -138,7 +138,7 @@ This [already fixed link](/ko/docs/concepts/overview) should be ignored.`;
     );
     assert.strictEqual(
       diagnostic.code,
-      'missing-language-path',
+      'translation-available',
       'Diagnostic should have correct code'
     );
 

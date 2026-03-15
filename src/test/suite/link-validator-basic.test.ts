@@ -2,23 +2,25 @@ import * as assert from 'assert';
 
 suite('LinkValidator Basic Tests', () => {
   test('should detect links without language code', () => {
-    // This would require creating a mock document
-    // For now, we'll test the regex pattern
-    const linkPattern = /\[([^\]]*)\]\(\/docs\/([^)]*)\)/g;
+    const linkPattern = /\[([^\]]*)\]\(\/(?:([a-z]{2}(?:-[a-z]{2})?)\/)?docs\/([^)]*)\)/g;
     const testText = '[example](/docs/concepts/overview)';
     const matches = [...testText.matchAll(linkPattern)];
 
     assert.strictEqual(matches.length, 1);
     assert.strictEqual(matches[0][1], 'example');
-    assert.strictEqual(matches[0][2], 'concepts/overview');
+    assert.strictEqual(matches[0][2], undefined); // no language prefix
+    assert.strictEqual(matches[0][3], 'concepts/overview');
   });
 
-  test('should not match links with language code', () => {
-    const linkPattern = /\[([^\]]*)\]\(\/docs\/([^)]*)\)/g;
+  test('should match links with language code', () => {
+    const linkPattern = /\[([^\]]*)\]\(\/(?:([a-z]{2}(?:-[a-z]{2})?)\/)?docs\/([^)]*)\)/g;
     const testText = '[example](/ko/docs/concepts/overview)';
     const matches = [...testText.matchAll(linkPattern)];
 
-    assert.strictEqual(matches.length, 0);
+    assert.strictEqual(matches.length, 1);
+    assert.strictEqual(matches[0][1], 'example');
+    assert.strictEqual(matches[0][2], 'ko');
+    assert.strictEqual(matches[0][3], 'concepts/overview');
   });
 
   test('should validate expected translation path generation', () => {
@@ -108,7 +110,9 @@ suite('LinkValidator Basic Tests', () => {
       { text: '[test](/docs/overview/)', shouldMatch: true },
       { text: '[test](/docs/overview.md)', shouldMatch: true },
       { text: '[test](/docs/sub/path/file)', shouldMatch: true },
-      { text: '[test](/ko/docs/overview)', shouldMatch: false }, // Has language code
+      { text: '[test](/ko/docs/overview)', shouldMatch: true }, // Has language code - now matched
+      { text: '[test](/en/docs/overview)', shouldMatch: true }, // English prefix - now matched
+      { text: '[test](/zh-cn/docs/overview)', shouldMatch: true }, // Hyphenated lang code
       { text: '[test](https://example.com)', shouldMatch: false }, // External link
       { text: '[test](/other/path)', shouldMatch: false }, // Not /docs/
       { text: 'plain text', shouldMatch: false }, // No link
@@ -117,8 +121,7 @@ suite('LinkValidator Basic Tests', () => {
     ];
 
     testCases.forEach(({ text, shouldMatch }) => {
-      // Create new regex for each test to avoid global state issues
-      const LINK_REGEX = /\[([^\]]*)\]\(\/docs\/([^)]*)\)/;
+      const LINK_REGEX = /\[([^\]]*)\]\(\/(?:([a-z]{2}(?:-[a-z]{2})?)\/)?docs\/([^)]*)\)/;
       const matches = LINK_REGEX.test(text);
       assert.strictEqual(matches, shouldMatch, `Regex test failed for: "${text}"`);
     });

@@ -106,6 +106,7 @@
     "test": "npm run compile && node ./out/test/runTest.js",
     "pretest": "npm run compile",
     "vscode:prepublish": "npm run compile",
+    "prepackage": "npm run lint:fix && npm run format && npm run compile",
     "package": "vsce package",
     "lint": "eslint src --ext ts",
     "lint:fix": "eslint src --ext ts --fix",
