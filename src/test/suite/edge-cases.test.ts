@@ -177,12 +177,13 @@ Another [valid link too](/docs/reference/guide) - should also work`;
     );
     mockDiagnostic.source = 'KubeLingoAssist';
     mockDiagnostic.code = 'missing-language-path';
+    // No relatedInformation → should return undefined
 
-    const action = (codeActionProvider as any).createFixLanguagePathAction(
+    const action = (codeActionProvider as any).createOpenTranslationFileAction(
       mockDocument,
       mockDiagnostic
     );
-    assert.strictEqual(action, undefined, 'Should return undefined when error occurs');
+    assert.strictEqual(action, undefined, 'Should return undefined when no relatedInformation');
   });
 
   test('should validate regex patterns correctly', () => {

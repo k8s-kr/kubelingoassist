@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs';
 import {
   isTranslationFile,
   extractLanguageCode,
@@ -14,13 +15,31 @@ const CONSTANTS = {
 } as const;
 
 const MESSAGES = {
-  CODE_ACTION_TITLE: (language: string) => `언어 경로 추가: /${language}/docs/...`,
+  CODE_ACTION_TITLE: (title: string) => `번역 파일 열기: ${title}`,
 } as const;
+
+function readFrontmatterTitle(filePath: string): string | null {
+  try {
+    const content = fs.readFileSync(filePath, 'utf-8');
+    const frontmatterMatch = content.match(/^---\s*\n([\s\S]*?)\n---/);
+    if (!frontmatterMatch) {
+      return null;
+    }
+    const titleMatch = frontmatterMatch[1].match(/^title:\s*(.+)$/m);
+    if (!titleMatch) {
+      return null;
+    }
+    return titleMatch[1].replace(/^["']|["']$/g, '').trim();
+  } catch {
+    return null;
+  }
+}
 
 export class LinkValidator {
   private diagnostics: vscode.DiagnosticCollection;
   private codeActionProvider: LinkCodeActionProvider;
   private fileExists: (filePath: string) => boolean = fileExistsSync;
+  private readTitle: (filePath: string) => string | null = readFrontmatterTitle;
 
   constructor() {
     this.diagnostics = vscode.languages.createDiagnosticCollection('kubelingoassist-links');
@@ -75,15 +94,16 @@ export class LinkValidator {
 
       if (translationExists && expectedTranslationPath) {
         const isFolder = baseLinkPath.endsWith('/');
-        const resourceType = isFolder ? '폴더' : '파일';
-        const message = `⚠️ 번역 ${resourceType}이 존재합니다.`;
-        const diagnostic = new vscode.Diagnostic(range, message, vscode.DiagnosticSeverity.Warning);
-        diagnostic.source = 'KubeLingoAssist';
-        diagnostic.code = 'missing-language-path';
         const translationFilePath = this.resolveTranslationFilePath(
           expectedTranslationPath,
           isFolder
         );
+        const title = this.readTitle(translationFilePath);
+        const displayTitle = title ?? linkPath;
+        const message = `번역 파일이 존재합니다: ${displayTitle}`;
+        const diagnostic = new vscode.Diagnostic(range, message, vscode.DiagnosticSeverity.Warning);
+        diagnostic.source = 'KubeLingoAssist';
+        diagnostic.code = 'missing-language-path';
         const translationUri = vscode.Uri.file(translationFilePath);
         diagnostic.relatedInformation = [
           new vscode.DiagnosticRelatedInformation(
@@ -181,7 +201,7 @@ export class LinkCodeActionProvider implements vscode.CodeActionProvider {
     const codeActions: vscode.CodeAction[] = [];
 
     for (const diagnostic of linkDiagnostics) {
-      const action = this.createFixLanguagePathAction(document, diagnostic);
+      const action = this.createOpenTranslationFileAction(document, diagnostic);
       if (action) {
         codeActions.push(action);
       }
@@ -196,40 +216,32 @@ export class LinkCodeActionProvider implements vscode.CodeActionProvider {
     );
   }
 
-  private createFixLanguagePathAction(
-    document: vscode.TextDocument,
+  private createOpenTranslationFileAction(
+    _document: vscode.TextDocument,
     diagnostic: vscode.Diagnostic
   ): vscode.CodeAction | undefined {
     try {
-      const text = document.getText(diagnostic.range);
-      const regex = new RegExp(CONSTANTS.LINK_REGEX.source);
-      const match = text.match(regex);
-
-      if (!match || match.length < 3) {
+      const relatedInfo = diagnostic.relatedInformation;
+      if (!relatedInfo || relatedInfo.length === 0) {
         return undefined;
       }
 
-      const linkText = match[1];
-      const linkPath = match[2];
-      const currentLanguage = extractLanguageCode(document.uri.fsPath);
-
-      if (currentLanguage === 'unknown') {
-        return undefined;
-      }
-
-      const suggestedPath = `/${currentLanguage.toLowerCase()}/docs/${linkPath}`;
-      const newLinkText = `[${linkText}](${suggestedPath})`;
-      const title = MESSAGES.CODE_ACTION_TITLE(currentLanguage);
+      const translationUri = relatedInfo[0].location.uri;
+      const displayTitle = diagnostic.message.replace('번역 파일이 존재합니다: ', '');
+      const title = MESSAGES.CODE_ACTION_TITLE(displayTitle);
 
       const action = new vscode.CodeAction(title, vscode.CodeActionKind.QuickFix);
-      action.edit = new vscode.WorkspaceEdit();
-      action.edit.replace(document.uri, diagnostic.range, newLinkText);
+      action.command = {
+        command: 'vscode.open',
+        title,
+        arguments: [translationUri],
+      };
       action.diagnostics = [diagnostic];
       action.isPreferred = true;
 
       return action;
     } catch (error) {
-      console.warn('Failed to create fix language path action:', error);
+      console.warn('Failed to create open translation file action:', error);
       return undefined;
     }
   }
