@@ -11,15 +11,15 @@ import * as fs from 'fs';
 export const CONTENT_LANG_REGEX = /\/content\/([^/]+)\//;
 
 /** 번역 파일 패턴 (content/{lang}/docs/) */
-export const TRANSLATION_FILE_REGEX = /\/content\/([^\/]+)\/docs\//;
+export const TRANSLATION_FILE_REGEX = /\/content\/([^/]+)\/docs\//;
 
 /**
  * 파일 경로에서 언어 코드를 추출합니다.
  * 예: '/content/ko/docs/test.md' → 'ko'
  */
 export function extractLanguageCode(filePath: string): string {
-    const match = filePath.match(CONTENT_LANG_REGEX);
-    return match ? match[1] : 'unknown';
+  const match = filePath.match(CONTENT_LANG_REGEX);
+  return match ? match[1] : 'unknown';
 }
 
 /**
@@ -27,8 +27,8 @@ export function extractLanguageCode(filePath: string): string {
  * 예: '/content/ko/docs/test.md' → true, '/content/en/docs/test.md' → false
  */
 export function isTranslationFile(filePath: string): boolean {
-    const match = filePath.match(TRANSLATION_FILE_REGEX);
-    return match !== null && match[1] !== 'en';
+  const match = filePath.match(TRANSLATION_FILE_REGEX);
+  return match !== null && match[1] !== 'en';
 }
 
 /**
@@ -36,8 +36,8 @@ export function isTranslationFile(filePath: string): boolean {
  * 예: '/workspace/website/content/ko/docs/test.md' → '/workspace/website/content'
  */
 export function getContentRoot(filePath: string): string | null {
-    const match = filePath.match(/(.*\/content)\/[^/]+\//);
-    return match ? match[1] : null;
+  const match = filePath.match(/(.*\/content)\/[^/]+\//);
+  return match ? match[1] : null;
 }
 
 /**
@@ -45,11 +45,11 @@ export function getContentRoot(filePath: string): string | null {
  * 예: 'content/ko/docs/test.md' → 'content/en/docs/test.md'
  */
 export function getOriginalEnglishPath(translationPath: string): string | null {
-    const match = translationPath.match(CONTENT_LANG_REGEX);
-    if (match && match[1] !== 'en') {
-        return translationPath.replace(`content/${match[1]}/`, 'content/en/');
-    }
-    return null;
+  const match = translationPath.match(CONTENT_LANG_REGEX);
+  if (match && match[1] !== 'en') {
+    return translationPath.replace(`content/${match[1]}/`, 'content/en/');
+  }
+  return null;
 }
 
 /**
@@ -57,13 +57,13 @@ export function getOriginalEnglishPath(translationPath: string): string | null {
  * 경로가 '/'로 끝나면 디렉토리 여부를, 아니면 파일 여부를 확인합니다.
  */
 export function fileExistsSync(filePath: string): boolean {
-    try {
-        if (!fs.existsSync(filePath)) {
-            return false;
-        }
-        const stats = fs.statSync(filePath);
-        return filePath.endsWith('/') ? stats.isDirectory() : stats.isFile();
-    } catch {
-        return false;
+  try {
+    if (!fs.existsSync(filePath)) {
+      return false;
     }
+    const stats = fs.statSync(filePath);
+    return filePath.endsWith('/') ? stats.isDirectory() : stats.isFile();
+  } catch {
+    return false;
+  }
 }

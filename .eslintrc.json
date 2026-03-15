@@ -29,5 +29,13 @@
     "eqeqeq": "warn",
     "no-throw-literal": "warn"
   },
+  "overrides": [
+    {
+      "files": ["src/test/**/*.ts"],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off"
+      }
+    }
+  ],
   "ignorePatterns": ["out", "dist", "node_modules", "**/*.d.ts"]
 }

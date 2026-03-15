@@ -24,13 +24,15 @@ export const ko: TranslationResource = {
     enableKubelingoFirst: 'KubelingoAssist를 먼저 활성화해주세요.',
     noActiveFile: '활성화된 파일이 없습니다.',
     invalidFilePath: '파일 경로가 유효하지 않습니다.',
-    cannotFindTranslationPath: '번역 파일 경로를 찾을 수 없습니다. 해당 기능은 Kubernetes 문서 저장소의 /content/en/ 또는 /content/{언어}/ 구조에서 작동합니다.',
+    cannotFindTranslationPath:
+      '번역 파일 경로를 찾을 수 없습니다. 해당 기능은 Kubernetes 문서 저장소의 /content/en/ 또는 /content/{언어}/ 구조에서 작동합니다.',
     splitViewOpened: 'Split view로 파일을 열었습니다. Cmd+Shift+Z로 스크롤 동기화를 활성화하세요.',
     syncScrollEnabled: '동기화 스크롤이 활성화되었습니다.',
     syncScrollDisabled: '동기화 스크롤이 비활성화되었습니다.',
     kubelingoEnabled: 'KubelingoAssist가 활성화되었습니다.',
     kubelingoDisabledMsg: 'KubelingoAssist가 비활성화되었습니다.',
-    reviewModeEnabled: '리뷰 모드가 활성화되었습니다. 이제 최근 커밋의 변경된 파일을 볼 수 있습니다.',
+    reviewModeEnabled:
+      '리뷰 모드가 활성화되었습니다. 이제 최근 커밋의 변경된 파일을 볼 수 있습니다.',
     translationModeEnabled: '번역 모드가 활성화되었습니다.',
     translationFileNotExists: '번역 파일이 존재하지 않습니다. 새로 생성하시겠습니까?',
     createNewFile: '새 파일을 생성하시겠습니까?',
@@ -40,16 +42,20 @@ export const ko: TranslationResource = {
     originalFileNotFound: '원본 파일이 존재하지 않습니다: {path}',
     gitUtilitiesNotAvailable: 'Git 유틸리티를 사용할 수 없습니다',
     noRecentCommits: '최근 커밋을 찾을 수 없습니다',
-    noTranslationFilesFound: '최근 커밋에서 번역 파일을 찾을 수 없습니다. 해당 기능은 content/{언어} 구조를 가진 Kubernetes 문서 저장소에서 작동합니다. 예상된 디렉터리 구조에 번역된 마크다운 파일을 커밋했는지 확인하세요.',
+    noTranslationFilesFound:
+      '최근 커밋에서 번역 파일을 찾을 수 없습니다. 해당 기능은 content/{언어} 구조를 가진 Kubernetes 문서 저장소에서 작동합니다. 예상된 디렉터리 구조에 번역된 마크다운 파일을 커밋했는지 확인하세요.',
     openedForReview: '리뷰를 위해 원본 영어 파일과 함께 {path}를 열었습니다',
     failedToOpenReviewMode: '리뷰 모드로 파일을 여는데 실패했습니다: {error}',
     failedToGetRecentCommits: '최근 커밋을 가져오는데 실패했습니다: {error}',
     couldNotDetermineOriginalPath: '원본 영어 파일 경로를 확인할 수 없습니다',
-    reviewFileNotTranslationFile: '현재 파일이 번역 파일이 아닙니다. 번역 파일(content/{언어}/)을 열어주세요.',
+    reviewFileNotTranslationFile:
+      '현재 파일이 번역 파일이 아닙니다. 번역 파일(content/{언어}/)을 열어주세요.',
     couldNotFindEnglishFile: '영문 원본 파일 경로를 찾을 수 없습니다.',
     englishFileNotFound: '영문 원본 파일을 찾을 수 없습니다: {path}',
-    notKubernetesRepo: '해당 기능은 Kubernetes 문서 저장소(kubernetes/website)에서만 작동합니다. 번역 기능을 사용하려면 kubernetes/website 저장소를 열어주세요.',
-    kubernetesRepoOnly: '해당 기능은 Kubernetes 문서 저장소(kubernetes/website)에서만 작동합니다. 리뷰 모드를 사용하려면 kubernetes/website 저장소를 열어주세요.',
+    notKubernetesRepo:
+      '해당 기능은 Kubernetes 문서 저장소(kubernetes/website)에서만 작동합니다. 번역 기능을 사용하려면 kubernetes/website 저장소를 열어주세요.',
+    kubernetesRepoOnly:
+      '해당 기능은 Kubernetes 문서 저장소(kubernetes/website)에서만 작동합니다. 리뷰 모드를 사용하려면 kubernetes/website 저장소를 열어주세요.',
     pr: {
       enterPRNumber: 'PR 번호를 입력하세요',
       enterValidPRNumber: '유효한 PR 번호를 입력해주세요',
@@ -57,7 +63,8 @@ export const ko: TranslationResource = {
       failedToFetchPR: 'PR #{number} 가져오기 실패',
       noTranslationFilesInPR: 'PR #{number}: {title}\n이 PR에서 번역 파일을 찾을 수 없습니다.',
       checkingOutPR: 'PR #{number} 체크아웃 중...',
-      prFetchedSuccess: 'PR #{number}: {title}\n{count}개의 번역 파일을 찾았습니다\n작성자: {author} | 상태: {state}',
+      prFetchedSuccess:
+        'PR #{number}: {title}\n{count}개의 번역 파일을 찾았습니다\n작성자: {author} | 상태: {state}',
       failedToFetchPRInfo: 'PR 정보 가져오기 실패: {error}',
       noFilesToOpen: '이 PR에서 열 수 있는 파일이 없습니다.',
     },
@@ -82,7 +89,8 @@ export const ko: TranslationResource = {
       storageLimit: '저장소 용량이 부족합니다.',
       unsavedChanges: '저장되지 않은 변경사항이 있습니다.',
       deleteApiKey: '{provider} API 키를 삭제하시겠습니까?',
-      insufficientTranslationFiles: '동기화할 번역 파일이 부족합니다. 원본과 번역 파일을 모두 열어주세요.',
+      insufficientTranslationFiles:
+        '동기화할 번역 파일이 부족합니다. 원본과 번역 파일을 모두 열어주세요.',
     },
     error: {
       configurationError: '설정에 오류가 있습니다.',
@@ -130,7 +138,8 @@ export const ko: TranslationResource = {
       autoRefreshLineCount: '현재 열려있는 파일들의 라인수를 자동으로 업데이트',
     },
     aiConfig: {
-      currentProviderSelect: '현재 프로바이더: {currentProvider}. 구성할 API 프로바이더를 선택하세요:',
+      currentProviderSelect:
+        '현재 프로바이더: {currentProvider}. 구성할 API 프로바이더를 선택하세요:',
       enterApiKey: '{provider} API 키를 입력하세요',
       apiKeyStorageNote: 'API 키는 VS Code 보안 저장소에 안전하게 저장됩니다',
       configuredStatus: '✓ 구성됨',

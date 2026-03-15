@@ -6,7 +6,7 @@ import { i18n, SupportedLanguage } from '../i18n';
 // Types and Interfaces
 interface WebviewMessage {
   type: string;
-  payload?: any;
+  payload?: unknown;
   mode?: 'translation' | 'review';
   prNumber?: number;
   reviewEvent?: 'APPROVE' | 'COMMENT' | 'REQUEST_CHANGES';
@@ -77,11 +77,11 @@ export class TranslationViewProvider implements vscode.WebviewViewProvider {
   public resolveWebviewView(
     webviewView: vscode.WebviewView,
     _context: vscode.WebviewViewResolveContext,
-    _token: vscode.CancellationToken,
+    _token: vscode.CancellationToken
   ) {
     this.views.add(webviewView);
     webviewView.onDidDispose(() => this.views.delete(webviewView));
-    
+
     // 패널 표시 상태 변경 감지
     webviewView.onDidChangeVisibility(() => {
       if (webviewView.visible) {
@@ -130,7 +130,7 @@ export class TranslationViewProvider implements vscode.WebviewViewProvider {
     this._updateState(partialState);
   }
 
-  public sendPRInfo(prInfo: any) {
+  public sendPRInfo(prInfo: unknown) {
     for (const view of this.views) {
       if (view.visible) {
         view.webview.postMessage({ type: 'prInfo', payload: prInfo });
@@ -138,7 +138,7 @@ export class TranslationViewProvider implements vscode.WebviewViewProvider {
     }
   }
 
-  public sendPRList(prList: any[]) {
+  public sendPRList(prList: unknown[]) {
     for (const view of this.views) {
       if (view.visible) {
         view.webview.postMessage({ type: 'prList', payload: prList });
@@ -166,9 +166,10 @@ export class TranslationViewProvider implements vscode.WebviewViewProvider {
   private _handleWebviewMessage(msg: WebviewMessage) {
     try {
       console.log('Webview received message:', msg);
-      
+
       const messageHandlers: { [key: string]: () => void } = {
-        openTranslationFile: () => this._executeCommand(WEBVIEW_CONFIG.COMMANDS.OPEN_TRANSLATION_FILE),
+        openTranslationFile: () =>
+          this._executeCommand(WEBVIEW_CONFIG.COMMANDS.OPEN_TRANSLATION_FILE),
         openReviewFile: () => this._executeCommand(WEBVIEW_CONFIG.COMMANDS.OPEN_REVIEW_FILE),
         toggleSyncScroll: () => this._executeCommand(WEBVIEW_CONFIG.COMMANDS.TOGGLE_SYNC_SCROLL),
         toggleKubelingo: () => {
@@ -176,11 +177,14 @@ export class TranslationViewProvider implements vscode.WebviewViewProvider {
           this._executeCommand(WEBVIEW_CONFIG.COMMANDS.TOGGLE_KUBELINGO);
         },
         changeMode: () => this._executeCommand(WEBVIEW_CONFIG.COMMANDS.CHANGE_MODE, msg.mode),
-        fetchPRInfo: () => this._executeCommand(WEBVIEW_CONFIG.COMMANDS.FETCH_PR_INFO, msg.prNumber),
+        fetchPRInfo: () =>
+          this._executeCommand(WEBVIEW_CONFIG.COMMANDS.FETCH_PR_INFO, msg.prNumber),
         openPRFile: () => this._executeCommand(WEBVIEW_CONFIG.COMMANDS.OPEN_PR_FILE, msg.payload),
-        pushCommentsToGitHub: () => this._executeCommand(WEBVIEW_CONFIG.COMMANDS.PUSH_COMMENTS_TO_GITHUB, msg.reviewEvent),
+        pushCommentsToGitHub: () =>
+          this._executeCommand(WEBVIEW_CONFIG.COMMANDS.PUSH_COMMENTS_TO_GITHUB, msg.reviewEvent),
         aiChat: () => {
-          const message = msg?.payload?.message ?? '';
+          const payload = msg?.payload as Record<string, string> | undefined;
+          const message = payload?.message ?? '';
           notificationManager.showInfo('notifications.info.aiChatMessage', { message });
         },
       };
@@ -193,11 +197,13 @@ export class TranslationViewProvider implements vscode.WebviewViewProvider {
       }
     } catch (error) {
       console.error('Error handling webview message:', error);
-      notificationManager.showError('notifications.error.webviewMessageProcessingError', { error: String(error) });
+      notificationManager.showError('notifications.error.webviewMessageProcessingError', {
+        error: String(error),
+      });
     }
   }
 
-  private _executeCommand(command: string, ...args: any[]) {
+  private _executeCommand(command: string, ...args: unknown[]) {
     vscode.commands.executeCommand(command, ...args);
   }
 
@@ -229,7 +235,7 @@ export class TranslationViewProvider implements vscode.WebviewViewProvider {
       `style-src ${cspSource} 'unsafe-inline'`,
       `script-src 'nonce-${nonce}' ${cspSource}`,
       `font-src ${cspSource} data:`,
-      `connect-src ${cspSource}`
+      `connect-src ${cspSource}`,
     ].join('; ');
   }
 
@@ -271,6 +277,8 @@ export class TranslationViewProvider implements vscode.WebviewViewProvider {
 
   private _generateNonce(): string {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    return Array.from({ length: 32 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+    return Array.from({ length: 32 }, () => chars[Math.floor(Math.random() * chars.length)]).join(
+      ''
+    );
   }
 }
