@@ -4,11 +4,15 @@ import { StatusBarManager } from '../features/ui/StatusBarManager';
 import { TranslationCommandManager } from '../features/translation/TranslationCommandManager';
 import { ScrollSyncManager } from '../features/translation/ScrollSyncManager';
 import { LinkValidator } from '../validators/link';
+import { TerminologyValidator } from '../validators/terminology';
+import { CorpusIndexer } from '../features/terminology/CorpusIndexer';
 import { PRInfoService } from '../features/review/PRInfoService';
 import { i18n } from '../features/i18n';
 
 let statusBarManager: StatusBarManager;
 let linkValidator: LinkValidator;
+let terminologyValidator: TerminologyValidator;
+let corpusIndexer: CorpusIndexer | undefined;
 let translationCommandManager: TranslationCommandManager;
 let scrollSyncManager: ScrollSyncManager;
 let prInfoService: PRInfoService;
@@ -138,6 +142,16 @@ export function activate(context: vscode.ExtensionContext) {
   // Link validator 초기화
   linkValidator = new LinkValidator();
 
+  // Terminology validator 초기화 (워크스페이스 corpus를 백그라운드로 인덱싱)
+  const workspaceRootForTerminology = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+  if (workspaceRootForTerminology) {
+    corpusIndexer = new CorpusIndexer(workspaceRootForTerminology);
+    corpusIndexer.buildIndex().catch((error) => {
+      console.error('Failed to build terminology corpus index:', error);
+    });
+  }
+  terminologyValidator = new TerminologyValidator(corpusIndexer);
+
   // Translation Command Manager 초기화
   translationCommandManager = new TranslationCommandManager();
 
@@ -163,14 +177,16 @@ export function activate(context: vscode.ExtensionContext) {
   // 저장된 상태로 초기화 (상태바, 웹뷰 동기화)
   translationCommandManager.initStateFromStorage(context);
 
-  // 이미 열려있는 모든 문서에 대해 링크 검증 실행
+  // 이미 열려있는 모든 문서에 대해 링크/용어 검증 실행
   vscode.workspace.textDocuments.forEach((document) => {
     linkValidator.validateLinks(document);
+    terminologyValidator.validateTerminology(document);
   });
 
-  // 문서 변경 시 링크 검증 및 라인수 업데이트
+  // 문서 변경 시 링크/용어 검증 및 라인수 업데이트
   const onDidChangeTextDocument = vscode.workspace.onDidChangeTextDocument((event) => {
     linkValidator.validateLinks(event.document);
+    terminologyValidator.validateTerminology(event.document);
 
     // 마크다운 파일 변경시 라인수 업데이트 (디바운싱 적용)
     if (event.document.languageId === 'markdown') {
@@ -178,23 +194,30 @@ export function activate(context: vscode.ExtensionContext) {
     }
   });
 
-  // 문서 저장 시 라인수 업데이트
+  // 문서 저장 시 라인수 업데이트 및 용어 인덱스 갱신
   const onDidSaveTextDocument = vscode.workspace.onDidSaveTextDocument(async (document) => {
     // 마크다운 파일인 경우에만 라인수 업데이트
     if (document.languageId === 'markdown') {
       await statusBarManager.refreshLineCount();
     }
+    if (corpusIndexer) {
+      corpusIndexer.updateFile(document.uri.fsPath);
+      terminologyValidator.validateTerminology(document);
+    }
   });
 
-  // 문서 열기 시 링크 검증
+  // 문서 열기 시 링크/용어 검증
   const onDidOpenTextDocument = vscode.workspace.onDidOpenTextDocument((document) => {
     linkValidator.validateLinks(document);
+    terminologyValidator.validateTerminology(document);
   });
 
   context.subscriptions.push(
     ...statusBarManager.getItems(),
     linkValidator.getDiagnostics(),
     linkValidator.getCodeActionProvider(),
+    terminologyValidator.getDiagnostics(),
+    terminologyValidator.getCodeActionProvider(),
     onDidChangeTextDocument,
     onDidSaveTextDocument,
     onDidOpenTextDocument
@@ -210,5 +233,8 @@ export function deactivate() {
   }
   if (linkValidator) {
     linkValidator.dispose();
+  }
+  if (terminologyValidator) {
+    terminologyValidator.dispose();
   }
 }
