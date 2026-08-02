@@ -36,3 +36,11 @@ npm-debug.log*
 ui/package-lock.json
 
 .vscode-test/
+
+# Local verification tests for the terminology-suggestion feature.
+# These were used to validate the implementation before opening the PR,
+# but only the core feature code (core/, features/terminology/, validators/terminology.ts)
+# is meant to ship in this contribution.
+src/test/suite/terminology-matcher.test.ts
+src/test/suite/corpus-indexer.test.ts
+src/test/suite/terminology-validator.test.ts
